@@ -30,7 +30,7 @@ def extract_text(file_path: str):
     raise ValueError(f"Unsupported file format: {ext}")
 
 # for pdf, docx, pptx file formats
-def docling_pipeline(file_path: str):
+def docling_pipeline(file_path: str) -> list[dict]:
     result = converter.convert(file_path)
     doc = result.document
     
