@@ -181,3 +181,4 @@ cython_debug/
 .cursorindexingignore
 backend/chroma_data/
 backend/tests/
+backend/dev_data/

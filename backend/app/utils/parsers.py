@@ -55,4 +55,4 @@ def default_pipeline(file_path: str, file_format:str):
                 "file_format": file_format
             }
         })
-    return chunks
+    return formatted_chunks
