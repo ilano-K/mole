@@ -1,19 +1,13 @@
 from docling.document_converter import DocumentConverter
 from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
-
-import docx
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os
-
-""" 
-if  pdf, docx, pptx -> docling extract
-if txt, md, csv, json -> normal extract
-"""
 
 # init docling related document converter and chunker
 converter = DocumentConverter()
 chunker = HybridChunker(
     tokenizer="sentence-transformers/all-MiniLM-L6-v2",
-    max_tokens=256,
+    max_tokens=384,
     merge_peers=True,
 )
 
@@ -22,11 +16,10 @@ def extract_text(file_path: str):
     # Get file extension
     ext = os.path.splitext(file_path)[1].lower()
     
-    if ext in ['.pdf', '.docx', '.pptx']:
+    if ext in ['.pdf', '.docx', '.pptx', '.md']:
         return docling_pipeline(file_path)
-    if ext in ['.txt', '.md', '.csv', '.json']:
-        # normal extract
-        pass
+    if ext in ['.txt']:
+        return default_pipeline(file_path, ext)
     raise ValueError(f"Unsupported file format: {ext}")
 
 # for pdf, docx, pptx file formats
@@ -43,3 +36,23 @@ def docling_pipeline(file_path: str) -> list[dict]:
             "metadata": chunk.meta.export_json_dict()
         })
     return formatted_chunks
+
+def default_pipeline(file_path: str, file_format:str):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
+    
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=200
+    )
+    chunks = splitter.split_text(text)
+    
+    formatted_chunks = []
+    for chunk in chunks:
+        formatted_chunks.append({
+            "text": chunk,
+            "metadata":{
+                "file_format": file_format
+            }
+        })
+    return chunks
