@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import os
 
-from backend.app.schemas.schemas import WatchConfig
+from backend.app.schemas.schemas import AppConfig
 from app.services import engine
 from app.utils import parsers
 
@@ -44,8 +44,8 @@ def search_document(query: str, limit: int = 5):
     return results   
 
 @app.post('/set-directory')
-def set_directory(payload: WatchConfig):
-    dir_path = Path(WatchConfig.target_directory)
+def set_directory(payload: AppConfig):
+    dir_path = Path(AppConfig.target_directory)
     
     if not dir_path.exists() or not dir_path.is_dir():
         raise HTTPException(status_code=404, detail="Directory does not exist or invalid")
