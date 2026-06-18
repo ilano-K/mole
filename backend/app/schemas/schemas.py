@@ -3,6 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
+class IndexRequest(BaseModel):
+    file_path: str
 class AppConfigBase(BaseModel):
     target_directory: str 
     allowed_extensions: List[FileExtensions]
@@ -13,11 +15,11 @@ class AppConfigCreate(AppConfigBase):
 
 class AppConfigResponse(AppConfigBase):
     id: int 
-    updated_at = Optional[datetime] = None 
+    updated_at: Optional[datetime] = None 
     model_config = ConfigDict(from_attributes=True)
     
-class DocumentBase():
-    file_name: str 
+class DocumentBase(BaseModel):
+    filename: str 
     file_path: str 
     
 class DocumentCreate(DocumentBase):
