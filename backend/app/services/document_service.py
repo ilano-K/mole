@@ -17,14 +17,20 @@ def execute_indexing(file_path: str, db: Session):
     doc_chunks = parsers.extract_text(file_path)
     engine.insert_chunks(file_path, doc_chunks)
     
-    doc = DocumentCreate(
-        filename=os.path.basename(file_path),
-        file_path=file_path,
-        last_modified=actual_modified_time
-    )
-    
-    created_doc = create_document(db, doc)
-    return created_doc
+    existing_doc = get_document_by_path(file_path)
+    if existing_doc:
+        existing_doc.last_modified = actual_modified_time
+        db.commit()
+        db.refresh(existing_doc)
+        return existing_doc
+    else:
+        doc = DocumentCreate(
+            filename=os.path.basename(file_path),
+            file_path=file_path,
+            last_modified=actual_modified_time
+        )
+        created_doc = create_document(db, doc)
+        return created_doc
     
 def check_needs_indexing(file_path: str, db: Session):
     if not os.path.exists(file_path):
