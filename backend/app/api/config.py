@@ -1,7 +1,7 @@
 from fastapi import HTTPException, APIRouter
 
 from app.dependencies.db import DB 
-from app.schemas.schemas import AppConfigResponse, AppConfigCreate
+from app.schemas.config import AppConfigResponse, AppConfigCreate
 from app.services import document_service
 
 router = APIRouter(tags=['config'])

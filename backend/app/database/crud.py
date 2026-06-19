@@ -1,16 +1,17 @@
 from sqlalchemy.orm import Session
 from app.database import models 
-from app.schemas import schemas
+from app.schemas.config import AppConfigCreate
+from app.schemas.document import DocumentCreate
 
 # ==========================================
 # APP CONFIGURATION CRUD
 # ==========================================
 
-def get_config(db: Session) -> schemas.AppConfigCreate: 
+def get_config(db: Session) -> AppConfigCreate: 
     """Fetch the single app config"""
     return db.query(models.AppConfig).filter(models.AppConfig.id==1).first()
 
-def upsert_config(db: Session, config_data: schemas.AppConfigCreate):
+def upsert_config(db: Session, config_data: AppConfigCreate):
     db_config = get_config()
     
     if db_config:
@@ -34,7 +35,7 @@ def upsert_config(db: Session, config_data: schemas.AppConfigCreate):
 # ==========================================
 # DOCUMENT CRUD
 # ==========================================
-def create_document(db: Session, document_data: schemas.DocumentCreate):
+def create_document(db: Session, document_data: DocumentCreate):
     db_document = models.Document(**document_data.model_dump())
     db.add(db_document)
     db.commit()
