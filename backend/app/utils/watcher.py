@@ -28,7 +28,7 @@ class DocumentHandler(FileSystemEventHandler):
             try:
                 response = requests.post(
                     "http://127.0.0.1:8000/index",
-                    params={"file_path": file_path}
+                    json={"file_path": file_path}
                 )
                 print("API response",response.json())
             except requests.exceptions.ConnectionError:
