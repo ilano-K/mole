@@ -1,14 +1,21 @@
+from app.schemas.document import DocumentCreate, ScanPendingFileResponse
 from app.schemas.indexing import BatchIndexResponse
 from app.schemas.config import AppConfigCreate
-from app.schemas.document import DocumentCreate, ScanPendingFileResponse
 from datetime import datetime, timezone 
 from sqlalchemy.orm import Session
-from app.database.crud import get_document_by_path, create_document, upsert_config, get_config
-from app.utils import parsers
-from app.services import engine
 from app.core import exceptions
+from app.services import engine
+from app.utils import parsers
 from pathlib import Path
 import os 
+
+from app.database.crud import (
+    get_document_by_path, 
+    create_document, 
+    upsert_config, 
+    get_config
+)
+
 
 def execute_indexing(file_path: str, db: Session):
     os_timestamp = os.path.getmtime(file_path)
@@ -34,7 +41,7 @@ def execute_indexing(file_path: str, db: Session):
     
 def check_needs_indexing(file_path: str, db: Session):
     if not os.path.exists(file_path):
-        raise FileNotFoundError("File not found")
+        raise exceptions.DocumentFileNotFoundError()
     
     os_timestamp = os.path.getmtime(file_path)
     actual_modified_time = datetime.fromtimestamp(os_timestamp, tz=timezone.utc)
@@ -56,13 +63,13 @@ def process_index_file(file_path: str, db: Session):
 
 def process_index_batch(file_paths: list[str], db: Session):
     if len(file_paths) == 0:
-        raise exceptions.EmptyFileListError
+        raise exceptions.EmptyFileListError()
     
     config = get_config(db)
     
     # Config not yet configured
     if not config or not config.target_directory:
-        raise exceptions.ConfigNotFoundError
+        raise exceptions.ConfigNotFoundError()
     
     stats = {"indexed": 0, "errors": 0, "failed_files": []}
     
@@ -83,11 +90,11 @@ def process_index_batch(file_paths: list[str], db: Session):
 def process_scan_files(db: Session):
     config = get_config(db)
     if not config:
-        raise exceptions.ConfigNotFoundError
+        raise exceptions.ConfigNotFoundError()
     
     target_dir = Path(config.target_directory)
     if not target_dir.exists():
-        raise exceptions.FileDirectoryNotFoundError
+        raise exceptions.FileDirectoryNotFoundError()
     
     pending_files = []
     
@@ -113,6 +120,6 @@ def save_config(payload: AppConfigCreate, db: Session):
     dir_path = Path(payload.target_directory)
     
     if not dir_path.exists():
-        raise FileNotFoundError
+        raise exceptions.DocumentFileNotFoundError()
     
     return upsert_config(db, payload)

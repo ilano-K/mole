@@ -1,6 +1,7 @@
 from docling.document_converter import DocumentConverter
 from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from app.core.exceptions import UnsupportedFileFormatError
 import os
 
 # init docling related document converter and chunker
@@ -20,7 +21,7 @@ def extract_text(file_path: str):
         return docling_pipeline(file_path)
     if ext in ['.txt']:
         return default_pipeline(file_path, ext)
-    raise ValueError(f"Unsupported file format: {ext}")
+    raise UnsupportedFileFormatError()
 
 # for pdf, docx, pptx file formats
 def docling_pipeline(file_path: str) -> list[dict]:

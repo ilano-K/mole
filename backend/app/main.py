@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.api.documents import router as documents_router
 from app.api.config import router as config_router
+from app.core.exceptions import AppException
 
 app = FastAPI(title="mole")
 
@@ -16,5 +18,9 @@ app.add_middleware(
 app.include_router(documents_router)
 app.include_router(config_router)
 
-
-    
+@app.exception_handler(AppException)
+def app_exception_handler(req: Request, exc: AppException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
