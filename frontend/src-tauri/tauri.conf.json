@@ -12,13 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "Mole Setup",
-        "width": 720,
-        "height": 720,
+        "title": "Mole",
+        "width": 1200,
+        "height": 800,
         "center": true,
         "decorations": true,
         "transparent": true,
-        "resizable": false
+        "resizable": true
       }
     ],
     "security": {
