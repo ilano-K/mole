@@ -10,7 +10,7 @@ class AppConfigBase(BaseModel):
     include_subfolders: bool = True 
     
 class AppConfigCreate(AppConfigBase):
-    pass 
+    pass
 
 class AppConfigResponse(AppConfigBase):
     id: int 
