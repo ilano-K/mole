@@ -1,37 +1,43 @@
 import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Folder, FileText, CheckSquare, Square } from "lucide-react";
+import { Folder } from "lucide-react";
+import FileTypeSelector from "../../components/FileTypeSelector";
+
+const FILE_TYPES = [".pdf", ".docx", ".txt"];
 
 export default function SelectDirectory() {
-  const [targetDir, setTargetDir] = useState<string>("");
-  const [includeSubfolders, setIncludeSubfolders] = useState<boolean>(true);
-  const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>([
-    ".pdf",
-    ".docx",
-    ".txt",
-  ]);
+  const [setup, setSetup] = useState({
+    targetDir: "",
+    includeSubfolders: true,
+    fileTypes: FILE_TYPES,
+  });
 
-  const availableFormats = [".pdf", ".docx", ".txt"];
-
-  const handleSelectFolder = async () => {
+  const selectFolder = async () => {
     try {
       const selected = await open({
         directory: true,
         multiple: false,
         title: "Select Document Directory",
       });
-      if (selected && typeof selected === "string") {
-        setTargetDir(selected);
+
+      if (typeof selected === "string") {
+        setSetup((prev) => ({
+          ...prev,
+          targetDir: selected,
+        }));
       }
     } catch (error) {
       console.error("Failed to open dialog:", error);
     }
   };
 
-  const handleTypeToggle = (ext: string) => {
-    setSelectedFileTypes((prev) =>
-      prev.includes(ext) ? prev.filter((t) => t !== ext) : [...prev, ext],
-    );
+  const toggleFileType = (ext: string) => {
+    setSetup((prev) => ({
+      ...prev,
+      fileTypes: prev.fileTypes.includes(ext)
+        ? prev.fileTypes.filter((t) => t !== ext)
+        : [...prev.fileTypes, ext],
+    }));
   };
 
   return (
@@ -45,9 +51,11 @@ export default function SelectDirectory() {
 
       <div className="setup-body">
         {/* Large Folder Select Button */}
-        <button className="directory-selector" onClick={handleSelectFolder}>
+        <button className="directory-selector" onClick={selectFolder}>
           <Folder size={18} className="icon-blue" />
-          <span>{targetDir ? targetDir : "Click to select folder"}</span>
+          <span>
+            {setup.targetDir ? setup.targetDir : "Click to select folder"}
+          </span>
         </button>
 
         {/* Subfolders Toggle Row */}
@@ -56,43 +64,30 @@ export default function SelectDirectory() {
           <label className="switch">
             <input
               type="checkbox"
-              checked={includeSubfolders}
-              onChange={(e) => setIncludeSubfolders(e.target.checked)}
+              checked={setup.includeSubfolders}
+              onChange={(e) =>
+                setSetup((prev) => ({
+                  ...prev,
+                  includeSubfolders: e.target.checked,
+                }))
+              }
             />
             <span className="slider round"></span>
           </label>
         </div>
 
         {/* File Types Selection */}
-        <div className="file-types-section">
-          <label className="section-label">File Types</label>
-          <div className="file-types-grid">
-            {availableFormats.map((ext) => {
-              const isSelected = selectedFileTypes.includes(ext);
-              return (
-                <button
-                  key={ext}
-                  className={`file-type-card ${isSelected ? "active" : ""}`}
-                  onClick={() => handleTypeToggle(ext)}
-                >
-                  {isSelected ? (
-                    <CheckSquare size={16} />
-                  ) : (
-                    <Square size={16} className="text-muted" />
-                  )}
-                  <FileText size={16} />
-                  <span>{ext}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FileTypeSelector
+          fileTypes={FILE_TYPES}
+          selected={setup.fileTypes}
+          onToggle={toggleFileType}
+        />
       </div>
 
       {/* Footer Actions */}
       <div className="setup-footer">
         <button className="btn-back">Back</button>
-        <button className="btn-continue" disabled={!targetDir}>
+        <button className="btn-continue" disabled={!setup.targetDir}>
           Continue
         </button>
       </div>
