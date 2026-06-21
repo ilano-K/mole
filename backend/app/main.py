@@ -4,7 +4,9 @@ from fastapi.responses import JSONResponse
 from app.api.documents import router as documents_router
 from app.api.config import router as config_router
 from app.core.exceptions import AppException
+from app.database.database import Base, engine
 
+Base.metadata.create_all(bind=engine)
 app = FastAPI(title="mole")
 
 app.add_middleware(
