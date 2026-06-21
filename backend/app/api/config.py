@@ -1,4 +1,4 @@
-from fastapi import HTTPException, APIRouter
+from fastapi import APIRouter
 
 from app.dependencies.db import DB 
 from app.schemas.config import AppConfigResponse, AppConfigCreate
@@ -10,3 +10,6 @@ router = APIRouter(tags=['config'])
 def set_config(payload: AppConfigCreate, db: DB):
     return document_service.save_config(db, payload)
     
+@router.get('/get-config', response_model=AppConfigResponse)
+def get_config(db: DB):
+    return document_service.get_config(db)

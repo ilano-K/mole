@@ -123,3 +123,10 @@ def save_config(payload: AppConfigCreate, db: Session):
         raise exceptions.DocumentFileNotFoundError()
     
     return upsert_config(db, payload)
+
+def get_config(db: Session):
+    config = get_config(db)
+    
+    if not config:
+        raise exceptions.ConfigNotFoundError()
+    return config 
