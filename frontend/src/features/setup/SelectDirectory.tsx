@@ -2,6 +2,7 @@ import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Folder } from "lucide-react";
 import FileTypeSelector from "../../components/FileTypeSelector";
+import { saveConfig } from "../../api/config";
 
 const FILE_TYPES = [".pdf", ".docx", ".txt"];
 
@@ -40,6 +41,17 @@ export default function SelectDirectory() {
     }));
   };
 
+  const handleContinue = async () => {
+    try {
+      await saveConfig({
+        target_directory: setup.targetDir,
+        include_subfolders: setup.includeSubfolders,
+        allowed_extensions: setup.fileTypes,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <div className="setup-card">
       <div className="setup-header">
@@ -87,7 +99,11 @@ export default function SelectDirectory() {
       {/* Footer Actions */}
       <div className="setup-footer">
         <button className="btn-back">Back</button>
-        <button className="btn-continue" disabled={!setup.targetDir}>
+        <button
+          className="btn-continue"
+          disabled={!setup.targetDir}
+          onClick={handleContinue}
+        >
           Continue
         </button>
       </div>
