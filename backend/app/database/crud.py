@@ -12,7 +12,7 @@ def get_config(db: Session) -> AppConfigCreate:
     return db.query(models.AppConfig).filter(models.AppConfig.id==1).first()
 
 def upsert_config(db: Session, config_data: AppConfigCreate):
-    db_config = get_config()
+    db_config = get_config(db)
     
     if db_config:
         db_config.target_directory = config_data.target_directory
