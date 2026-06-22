@@ -28,7 +28,7 @@ def upsert_config(db: Session, config_data: AppConfigCreate):
         db.add(db_config)
     
     db.commit()
-    db.refresh()
+    db.refresh(db_config)
     return db_config
 
 
@@ -39,7 +39,7 @@ def create_document(db: Session, document_data: DocumentCreate):
     db_document = models.Document(**document_data.model_dump())
     db.add(db_document)
     db.commit()
-    db.refresh()
+    db.refresh(db_document)
     return db_document
     
 def get_document_by_path(db:Session, file_path:str):
