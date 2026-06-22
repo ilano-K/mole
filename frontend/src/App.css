@@ -36,6 +36,19 @@ body {
   max-width: 600px;
   padding: 40px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  margin: auto; /* ensure exact centering inside the wrapper */
+}
+
+/* Wrapper to center the setup card without affecting global layout */
+.setup-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  /* Use full viewport height to center precisely */
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 0;
 }
 
 /* Headers */

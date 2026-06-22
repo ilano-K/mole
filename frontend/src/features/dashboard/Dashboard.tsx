@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./Dashboard.css";
+import { useNavigate } from "react-router-dom";
 
 // Temporary mock data for testing the UI
 const mockSearchResults = [
@@ -36,6 +37,7 @@ const mockSearchResults = [
 ];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [isAgentActive, setIsAgentActive] = useState(true);
   const [pendingFiles, setPendingFiles] = useState(3);
   const [showBanner, setShowBanner] = useState(true);
