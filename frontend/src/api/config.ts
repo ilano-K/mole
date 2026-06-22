@@ -7,7 +7,7 @@ export const fetchAppConfig = async (): Promise<AppConfig | null> => {
 
   if (response.status === 404) return null;
 
-  if (response.ok) {
+  if (!response.ok) {
     throw new Error("OH MY GOD WHAT A FAILURE");
   }
 
