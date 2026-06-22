@@ -8,7 +8,7 @@ router = APIRouter(tags=['config'])
 
 @router.post('/set-config', response_model=AppConfigResponse)
 def set_config(payload: AppConfigCreate, db: DB):
-    return document_service.save_config(db, payload)
+    return document_service.save_config(payload, db)
     
 @router.get('/get-config', response_model=AppConfigResponse)
 def get_config(db: DB):
