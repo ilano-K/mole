@@ -7,9 +7,9 @@ from app.schemas.document import DocumentCreate
 # APP CONFIGURATION CRUD
 # ==========================================
 
-def get_config(db: Session) -> AppConfigCreate: 
+def get_config(db: Session): 
     """Fetch the single app config"""
-    return db.query(models.AppConfig).filter(models.AppConfig.id==1).first()
+    return db.query(models.AppConfig).first()
 
 def upsert_config(db: Session, config_data: AppConfigCreate):
     db_config = get_config(db)

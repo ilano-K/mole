@@ -10,6 +10,6 @@ router = APIRouter(tags=['config'])
 def set_config(payload: AppConfigCreate, db: DB):
     return document_service.save_config(payload, db)
     
-@router.get('/get-config', response_model=AppConfigResponse)
+@router.get('/config', response_model=AppConfigResponse)
 def get_config(db: DB):
     return document_service.get_config(db)
