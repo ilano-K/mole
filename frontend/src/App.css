@@ -13,6 +13,16 @@
   --border-color: rgba(255, 255, 255, 0.06);
 }
 
+/* Make sizing predictable to avoid element+padding overflow */
+html {
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 body {
   margin: 0;
   background-color: var(--bg-app);
@@ -23,8 +33,31 @@ body {
     sans-serif;
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  /* Use flex-start to avoid vertical centering which creates unnecessary
+     scrollbars when content is taller than the viewport. Add page padding
+     so content doesn't stick to the top on large viewports. */
+  align-items: flex-start;
+  /* Fix vertical silent scrolling: use fixed viewport height so padding
+     is included in height calculation (box-sizing: border-box). Allow
+     vertical scrolling only when content overflows. */
+  height: 100vh;
+  /* Keep only horizontal page padding here; dashboard handles vertical spacing */
+  padding: 0 20px;
+  overflow-x: hidden;
+  /* Hide the page scrollbar; internal panels (search results, chat)
+     already have their own scrolling. This removes the visible vertical
+     scrollbar while keeping internal scroll behavior intact. */
+  overflow-y: hidden;
+}
+
+/* Hide scrollbar visuals across browsers as a fallback */
+body::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* Card Container */

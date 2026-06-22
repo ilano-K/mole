@@ -33,6 +33,36 @@ const mockSearchResults = [
       "Key privacy regulations include GDPR, CCPA, and local data protection acts...",
     path: "C:/Users/YourName/Documents/Research/Legal",
   },
+  {
+    id: 4,
+    type: "txt",
+    icon: "📃",
+    name: "Privacy_Regulations_Summary.txt",
+    badge: "TXT",
+    excerpt:
+      "Key privacy regulations include GDPR, CCPA, and local data protection acts...",
+    path: "C:/Users/YourName/Documents/Research/Legal",
+  },
+  {
+    id: 5,
+    type: "txt",
+    icon: "📃",
+    name: "Privacy_Regulations_Summary.txt",
+    badge: "TXT",
+    excerpt:
+      "Key privacy regulations include GDPR, CCPA, and local data protection acts...",
+    path: "C:/Users/YourName/Documents/Research/Legal",
+  },
+  {
+    id: 6,
+    type: "txt",
+    icon: "📃",
+    name: "Privacy_Regulations_Summary.txt",
+    badge: "TXT",
+    excerpt:
+      "Key privacy regulations include GDPR, CCPA, and local data protection acts...",
+    path: "C:/Users/YourName/Documents/Research/Legal",
+  },
 ];
 
 export default function Dashboard() {
