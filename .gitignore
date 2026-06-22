@@ -182,3 +182,4 @@ cython_debug/
 backend/chroma_data/
 backend/tests/
 backend/dev_data/
+*.db
