@@ -1,4 +1,4 @@
-import { AppConfig } from "../types/config";
+import { AppConfig, AppConfigCreate } from "../types/config";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -14,7 +14,7 @@ export const fetchAppConfig = async (): Promise<AppConfig | null> => {
   return response.json();
 };
 
-export const saveConfig = async (payload: AppConfig) => {
+export const saveConfig = async (payload: AppConfigCreate) => {
   const response = await fetch(`${API_BASE_URL}/set-config`, {
     method: "POST",
     headers: {
