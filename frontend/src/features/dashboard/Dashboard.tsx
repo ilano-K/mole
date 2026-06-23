@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./Dashboard.css";
+import { useNavigate } from "react-router-dom";
+import { scanPendingFiles } from "../../api/document";
+import LoadingScreen from "../../components/LoadingScreen";
 
 // Temporary mock data for testing the UI
 const mockSearchResults = [
@@ -67,9 +70,27 @@ const mockSearchResults = [
 
 export default function Dashboard() {
   const [isAgentActive, setIsAgentActive] = useState(true);
-  const [pendingFiles, setPendingFiles] = useState(3);
+  const [pendingFiles, setPendingFiles] = useState(0);
+  const [isLoadingPending, setIsLoadingPending] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
 
+  const loadPendingFiles = async () => {
+    try {
+      const result = await scanPendingFiles();
+      setPendingFiles(result?.pending_count ?? 0);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoadingPending(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPendingFiles();
+  }, []);
+  if (isLoadingPending) {
+    return <LoadingScreen message="Scanning Pending Files" />;
+  }
   return (
     <div className="dashboard-container">
       {/* 1. THE NOTIFICATION BANNER */}
