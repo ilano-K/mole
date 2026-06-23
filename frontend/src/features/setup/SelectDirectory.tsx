@@ -50,6 +50,8 @@ export default function SelectDirectory() {
         include_subfolders: setup.includeSubfolders,
         allowed_extensions: setup.fileTypes,
       });
+
+      navigate("/dashboard");
     } catch (error) {
       console.error(error);
     }
