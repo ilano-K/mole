@@ -8,7 +8,7 @@ export default function App() {
   const { isConfigured, isLoading } = useStartup();
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen message="Waking up Mole..." />;
   }
 
   // 3. The Route Decision (Once loading is complete)
