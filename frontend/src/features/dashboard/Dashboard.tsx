@@ -3,6 +3,7 @@ import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
 import { scanPendingFiles } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
+import { fetchAppConfig } from "../../api/config";
 
 // Temporary mock data for testing the UI
 const mockSearchResults = [
@@ -71,13 +72,17 @@ const mockSearchResults = [
 export default function Dashboard() {
   const [isAgentActive, setIsAgentActive] = useState(true);
   const [pendingFiles, setPendingFiles] = useState(0);
+  const [selectedDirectory, setSelectedDirectory] = useState("");
   const [isLoadingPending, setIsLoadingPending] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
 
   const loadPendingFiles = async () => {
     try {
-      const result = await scanPendingFiles();
-      setPendingFiles(result?.pending_count ?? 0);
+      const resultScan = await scanPendingFiles();
+      setPendingFiles(resultScan?.pending_count ?? 0);
+
+      const resultConfig = await fetchAppConfig();
+      setSelectedDirectory(resultConfig?.target_directory ?? "");
     } catch (error) {
       console.error(error);
     } finally {
@@ -102,7 +107,7 @@ export default function Dashboard() {
               <strong style={{ color: "#fbbf24" }}>
                 {pendingFiles} new files
               </strong>{" "}
-              detected in /Research
+              detected in {selectedDirectory}
             </span>
           </div>
           <div className="banner-right">
