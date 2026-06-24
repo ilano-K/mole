@@ -8,3 +8,18 @@ export const scanPendingFiles = async (): Promise<PendingFiles | null> => {
   }
   return response.json();
 };
+
+export const indexFile = async (payload: IndexFile) => {
+  const response = await fetch(`${API_BASE_URL}/index`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error("Error indexing file");
+  }
+  return response.json();
+};

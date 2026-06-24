@@ -1,4 +1,7 @@
 interface PendingFiles {
-  pending_count: number;
   files: string[];
+}
+
+interface IndexFile {
+  file_path: string;
 }

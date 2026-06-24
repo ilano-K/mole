@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import "./Dashboard.css";
-import { useNavigate } from "react-router-dom";
 import { scanPendingFiles } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
 import SyncProgress from "../sync/SyncProgress";
 import { fetchAppConfig } from "../../api/config";
+import { useSync } from "../../hooks/useSync";
 
 // Temporary mock data for testing the UI
 const mockSearchResults = [
@@ -72,7 +72,7 @@ const mockSearchResults = [
 
 export default function Dashboard() {
   const [isAgentActive, setIsAgentActive] = useState(true);
-  const [pendingFiles, setPendingFiles] = useState(0);
+  const [pendingFiles, setPendingFiles] = useState<string[]>([]);
   const [selectedDirectory, setSelectedDirectory] = useState("");
   const [isLoadingPending, setIsLoadingPending] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
@@ -81,7 +81,7 @@ export default function Dashboard() {
   const loadPendingFiles = async () => {
     try {
       const resultScan = await scanPendingFiles();
-      setPendingFiles(resultScan?.pending_count ?? 0);
+      setPendingFiles(resultScan?.files ?? []);
 
       const resultConfig = await fetchAppConfig();
       setSelectedDirectory(resultConfig?.target_directory ?? "");
@@ -92,28 +92,45 @@ export default function Dashboard() {
     }
   };
 
+  const { totalFiles, indexedFiles, currentFileName, isComplete, startSync } =
+    useSync();
+
   useEffect(() => {
     loadPendingFiles();
   }, []);
   if (isLoadingPending) {
     return <LoadingScreen message="Scanning Pending Files" />;
   }
+  useEffect(() => {
+    if (isComplete) {
+      setTimeout(() => {
+        setShowSyncModal(false);
+        loadPendingFiles(); // This re-scans the folder, dropping the banner count to 0!
+      }, 1000); // Wait 1 second so the user sees it hit 100%
+    }
+  }, [isComplete]);
   return (
     <div className="dashboard-container">
       {/* 1. THE NOTIFICATION BANNER */}
-      {showBanner && pendingFiles > 0 && (
+      {showBanner && pendingFiles.length > 0 && (
         <div className="alert-banner">
           <div className="banner-left">
             <span className="banner-icon">📄</span>
             <span>
               <strong style={{ color: "#fbbf24" }}>
-                {pendingFiles} new files
+                {pendingFiles.length} new files
               </strong>{" "}
               detected in {selectedDirectory}
             </span>
           </div>
           <div className="banner-right">
-            <button className="btn-sync" onClick={() => setShowSyncModal(true)}>
+            <button
+              className="btn-sync"
+              onClick={() => {
+                setShowSyncModal(true);
+                startSync(pendingFiles);
+              }}
+            >
               Sync Now
             </button>
             <button className="btn-ignore" onClick={() => setShowBanner(false)}>
@@ -133,7 +150,11 @@ export default function Dashboard() {
           onClick={() => setShowSyncModal(false)}
         >
           <div className="sync-modal" onClick={(e) => e.stopPropagation()}>
-            <SyncProgress />
+            <SyncProgress
+              totalFiles={totalFiles}
+              indexedFiles={indexedFiles}
+              currentFileName={currentFileName}
+            />
           </div>
         </div>
       )}
