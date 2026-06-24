@@ -3,6 +3,7 @@ import LoadingScreen from "./components/LoadingScreen";
 import Dashboard from "./features/dashboard/Dashboard";
 import SelectDirectory from "./features/setup/SelectDirectory";
 import { useStartup } from "./hooks/useStartup";
+import SyncProgress from "./features/sync/SyncProgress";
 
 export default function App() {
   const { isConfigured, isLoading } = useStartup();
@@ -24,7 +25,7 @@ export default function App() {
       <Routes>
         <Route path="/setup" element={<SelectDirectory />} />
         <Route path="/dashboard" element={<Dashboard />} />
-
+        <Route path="/sync" element={<SyncProgress />} />
         <Route
           path="*"
           element={

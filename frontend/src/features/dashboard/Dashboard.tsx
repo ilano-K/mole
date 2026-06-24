@@ -3,6 +3,7 @@ import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
 import { scanPendingFiles } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
+import SyncProgress from "../sync/SyncProgress";
 import { fetchAppConfig } from "../../api/config";
 
 // Temporary mock data for testing the UI
@@ -75,6 +76,7 @@ export default function Dashboard() {
   const [selectedDirectory, setSelectedDirectory] = useState("");
   const [isLoadingPending, setIsLoadingPending] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   const loadPendingFiles = async () => {
     try {
@@ -111,10 +113,7 @@ export default function Dashboard() {
             </span>
           </div>
           <div className="banner-right">
-            <button
-              className="btn-sync"
-              onClick={() => alert("Hitting /index-batch!")}
-            >
+            <button className="btn-sync" onClick={() => setShowSyncModal(true)}>
               Sync Now
             </button>
             <button className="btn-ignore" onClick={() => setShowBanner(false)}>
@@ -123,6 +122,18 @@ export default function Dashboard() {
             <button className="btn-close" onClick={() => setShowBanner(false)}>
               ✕
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sync modal popup */}
+      {showSyncModal && (
+        <div
+          className="sync-modal-overlay"
+          onClick={() => setShowSyncModal(false)}
+        >
+          <div className="sync-modal" onClick={(e) => e.stopPropagation()}>
+            <SyncProgress />
           </div>
         </div>
       )}
