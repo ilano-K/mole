@@ -11,41 +11,39 @@ import os
 
 from app.database import crud
 def execute_indexing(file_path: str, db: Session):
-    os_timestamp = os.path.getmtime(file_path)
-    actual_modified_time = datetime.fromtimestamp(os_timestamp, tz=timezone.utc)
-    
+    modified_timestamp = os.path.getmtime(file_path)
+
     doc_chunks = parsers.extract_text(file_path)
     engine.insert_chunks(file_path, doc_chunks)
-    
-    existing_doc = crud.get_document_by_path(file_path)
+
+    existing_doc = crud.get_document_by_path(db, file_path)
+
     if existing_doc:
-        existing_doc.last_modified = actual_modified_time
+        existing_doc.last_modified = modified_timestamp
         db.commit()
         db.refresh(existing_doc)
         return existing_doc
-    else:
-        doc = DocumentCreate(
-            filename=os.path.basename(file_path),
-            file_path=file_path,
-            last_modified=actual_modified_time
-        )
-        created_doc = crud.create_document(db, doc)
-        return created_doc
+
+    doc = DocumentCreate(
+        filename=os.path.basename(file_path),
+        file_path=file_path,
+        last_modified=modified_timestamp
+    )
+
+    return crud.create_document(db, doc)
     
 def check_needs_indexing(file_path: str, db: Session):
     if not os.path.exists(file_path):
         raise exceptions.DocumentFileNotFoundError()
-    
-    os_timestamp = os.path.getmtime(file_path)
-    actual_modified_time = datetime.fromtimestamp(os_timestamp, tz=timezone.utc)
-    
+
+    file_timestamp = os.path.getmtime(file_path)
+
     db_doc = crud.get_document_by_path(db, file_path)
-    
-    if db_doc and db_doc.last_modified:
-        db_time = db_doc.last_modified.replace(microsecond=0)
-        hd_time = actual_modified_time.replace(microsecond=0)
-        if db_time >= hd_time:
+
+    if db_doc and db_doc.last_modified is not None:
+        if db_doc.last_modified >= file_timestamp:
             return False
+
     return True
 
 def process_index_file(file_path: str, db: Session):
@@ -105,7 +103,6 @@ def process_scan_files(db: Session):
             if check_needs_indexing(file_path, db):
                 pending_files.append(file_path)
     return ScanPendingFileResponse(
-        pending_count=len(pending_files),
         files=pending_files
     )
 

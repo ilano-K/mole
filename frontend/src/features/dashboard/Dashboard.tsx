@@ -98,9 +98,7 @@ export default function Dashboard() {
   useEffect(() => {
     loadPendingFiles();
   }, []);
-  if (isLoadingPending) {
-    return <LoadingScreen message="Scanning Pending Files" />;
-  }
+
   useEffect(() => {
     if (isComplete) {
       setTimeout(() => {
@@ -109,6 +107,10 @@ export default function Dashboard() {
       }, 1000); // Wait 1 second so the user sees it hit 100%
     }
   }, [isComplete]);
+
+  if (isLoadingPending) {
+    return <LoadingScreen message="Scanning Pending Files" />;
+  }
   return (
     <div className="dashboard-container">
       {/* 1. THE NOTIFICATION BANNER */}

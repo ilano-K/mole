@@ -7,16 +7,15 @@ class DocumentBase(BaseModel):
     file_path: str 
     
 class DocumentCreate(DocumentBase):
-    last_modified: Optional[datetime] = None 
+    last_modified: Optional[float] = None 
     last_indexed: Optional[datetime] = None 
 
 class DocumentResponse(DocumentBase):
     id: int 
-    last_modified: Optional[datetime] = None 
+    last_modified: Optional[float] = None 
     last_indexed: Optional[datetime] = None 
     
     model_config = ConfigDict(from_attributes=True)
     
 class ScanPendingFileResponse(BaseModel):
-    pending_count: int 
     files: List[str]
