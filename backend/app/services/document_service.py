@@ -1,7 +1,9 @@
-from app.schemas.document import DocumentCreate, ScanPendingFileResponse
+from app.schemas.document import (
+    DocumentCreate, ScanPendingFileResponse, 
+    SearchResponse
+)
 from app.schemas.indexing import BatchIndexResponse
 from app.schemas.config import AppConfigCreate
-from datetime import datetime, timezone 
 from sqlalchemy.orm import Session
 from app.core import exceptions
 from app.services import engine
@@ -105,6 +107,15 @@ def process_scan_files(db: Session):
     return ScanPendingFileResponse(
         files=pending_files
     )
+
+def search_documents(query: str, n_results: int = 5):
+    results = engine.search_documents(query, n_results)
+    return SearchResponse(
+        documents=results.get("documents"),
+        metadatas=results.get("metadatas"),
+        distances=results.get("distances")
+    )
+    
 
 def save_config(payload: AppConfigCreate, db: Session):
     dir_path = Path(payload.target_directory)

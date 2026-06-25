@@ -1,13 +1,20 @@
-from fastapi import HTTPException, APIRouter
+from fastapi import APIRouter
 
-from app.schemas.document import DocumentResponse, ScanPendingFileResponse
-from app.schemas.indexing import IndexRequest, BatchIndexRequest, BatchIndexResponse
-from app.services import document_service, engine
+from app.schemas.document import (
+    ScanPendingFileResponse, 
+    SearchRequest, 
+    SearchResponse
+)
+from app.schemas.indexing import (
+    IndexRequest, IndexResponse, 
+    BatchIndexRequest, BatchIndexResponse
+)
+from app.services import document_service
 from app.dependencies.db import DB
 
 router = APIRouter(tags=['documents'])
 
-@router.post('/index', response_model=DocumentResponse)
+@router.post('/index', response_model=IndexResponse)
 def index_file(payload: IndexRequest, db: DB):
     return document_service.process_index_file(payload.file_path, db)
 
@@ -19,9 +26,6 @@ def index_batch(payload: BatchIndexRequest, db: DB):
 def scan_pending_files(db: DB):
     return document_service.process_scan_files(db)
 
-@router.get('/search')
-def search_document(query: str, limit: int = 5):
-    if not query or not query.strip():
-        raise HTTPException(status_code=400, detail="Query is empty" )
-    results = engine.search_documents(query, limit) 
-    return results   
+@router.get('/search', response_model=SearchResponse)
+def search_document(payload: SearchRequest):
+    return document_service.search_documents(payload.query, payload.n_results)
