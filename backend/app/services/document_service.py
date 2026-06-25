@@ -1,6 +1,6 @@
 from app.schemas.document import (
     DocumentCreate, ScanPendingFileResponse, 
-    SearchResponse
+    SearchResponse, SearchResult
 )
 from app.schemas.indexing import BatchIndexResponse
 from app.schemas.config import AppConfigCreate
@@ -109,12 +109,24 @@ def process_scan_files(db: Session):
     )
 
 def search_documents(query: str, n_results: int = 5):
-    results = engine.search_documents(query, n_results)
-    return SearchResponse(
-        documents=results.get("documents"),
-        metadatas=results.get("metadatas"),
-        distances=results.get("distances")
-    )
+    raw = engine.search_documents(query, n_results)
+    results = []
+    
+    for doc, meta, dist in zip(
+        raw["documents"],
+        raw["metadatas"],
+        raw["distances"]
+    ):
+        results.append(
+            SearchResult(
+                filename=os.path.basename(meta['file_path']),
+                file_path=meta['file_path'],
+                excerpt=doc[:250],
+                distance=dist,
+            )
+        )
+    
+    return SearchResponse(results=results)
     
 
 def save_config(payload: AppConfigCreate, db: Session):

@@ -15,9 +15,11 @@ class ScanPendingFileResponse(BaseModel):
 
 class SearchRequest(BaseModel):
     query: str
-    n_results: int 
+    n_results: int = 5
 
+class SearchResult(DocumentBase):
+    excerpt: str 
+    distance: float 
+    
 class SearchResponse(BaseModel):
-    documents: list
-    metadatas: list
-    distances: list
+    results: list[SearchResult]
