@@ -5,3 +5,8 @@ interface PendingFiles {
 interface IndexFile {
   file_path: string;
 }
+
+interface SearchDocument {
+  query: string;
+  n_results: number;
+}
