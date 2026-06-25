@@ -26,6 +26,6 @@ def index_batch(payload: BatchIndexRequest, db: DB):
 def scan_pending_files(db: DB):
     return document_service.process_scan_files(db)
 
-@router.get('/search', response_model=SearchResponse)
+@router.post('/search', response_model=SearchResponse)
 def search_document(payload: SearchRequest):
     return document_service.search_documents(payload.query, payload.n_results)
