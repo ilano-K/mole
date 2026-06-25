@@ -1,12 +1,23 @@
-interface PendingFiles {
+export interface PendingFilesResponse {
   files: string[];
 }
 
-interface IndexFile {
+export interface IndexFileRequest {
   file_path: string;
 }
 
-interface SearchDocument {
+export interface SearchRequest {
   query: string;
-  n_results: number;
+  n_results?: number;
+}
+
+export interface SearchResult {
+  file_path: string;
+  filename: string;
+  excerpt: string;
+  distance: number;
+}
+
+export interface SearchResponse {
+  results: SearchResult[];
 }

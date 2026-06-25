@@ -1,74 +1,12 @@
 import { useEffect, useState } from "react";
 import "./Dashboard.css";
-import { scanPendingFiles } from "../../api/document";
+import { scanPendingFiles, searchDocument } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
 import SyncProgress from "../sync/SyncProgress";
 import { fetchAppConfig } from "../../api/config";
 import { useSync } from "../../hooks/useSync";
-
-// Temporary mock data for testing the UI
-const mockSearchResults = [
-  {
-    id: 1,
-    type: "pdf",
-    icon: "📄",
-    name: "Data_Privacy_Act_2024.pdf",
-    badge: "PDF",
-    excerpt:
-      "The Data Privacy Act establishes comprehensive rules for data protection and user consent...",
-    path: "C:/Users/YourName/Documents/Research/Legal",
-  },
-  {
-    id: 2,
-    type: "docx",
-    icon: "📝",
-    name: "Filipino_Heritage_Notes.docx",
-    badge: "DOCX",
-    excerpt:
-      "My research on Filipino heritage reveals deep cultural traditions spanning centuries...",
-    path: "C:/Users/YourName/Documents/Research/Culture",
-  },
-  {
-    id: 3,
-    type: "txt",
-    icon: "📃",
-    name: "Privacy_Regulations_Summary.txt",
-    badge: "TXT",
-    excerpt:
-      "Key privacy regulations include GDPR, CCPA, and local data protection acts...",
-    path: "C:/Users/YourName/Documents/Research/Legal",
-  },
-  {
-    id: 4,
-    type: "txt",
-    icon: "📃",
-    name: "Privacy_Regulations_Summary.txt",
-    badge: "TXT",
-    excerpt:
-      "Key privacy regulations include GDPR, CCPA, and local data protection acts...",
-    path: "C:/Users/YourName/Documents/Research/Legal",
-  },
-  {
-    id: 5,
-    type: "txt",
-    icon: "📃",
-    name: "Privacy_Regulations_Summary.txt",
-    badge: "TXT",
-    excerpt:
-      "Key privacy regulations include GDPR, CCPA, and local data protection acts...",
-    path: "C:/Users/YourName/Documents/Research/Legal",
-  },
-  {
-    id: 6,
-    type: "txt",
-    icon: "📃",
-    name: "Privacy_Regulations_Summary.txt",
-    badge: "TXT",
-    excerpt:
-      "Key privacy regulations include GDPR, CCPA, and local data protection acts...",
-    path: "C:/Users/YourName/Documents/Research/Legal",
-  },
-];
+import { SearchResponse, SearchResult } from "../../types/document";
+import SearchResultCard from "./SearchResultCard";
 
 export default function Dashboard() {
   const [isAgentActive, setIsAgentActive] = useState(true);
@@ -77,6 +15,9 @@ export default function Dashboard() {
   const [isLoadingPending, setIsLoadingPending] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const loadPendingFiles = async () => {
     try {
@@ -111,6 +52,20 @@ export default function Dashboard() {
   if (isLoadingPending) {
     return <LoadingScreen message="Scanning Pending Files" />;
   }
+
+  const handleSearch = async () => {
+    if (!query.trim()) return;
+
+    try {
+      setIsSearching(true);
+      const response = await searchDocument({ query });
+      setResults((response as SearchResponse).results ?? []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
   return (
     <div className="dashboard-container">
       {/* 1. THE NOTIFICATION BANNER */}
@@ -173,6 +128,13 @@ export default function Dashboard() {
                 ? "Ask me anything about your documents..."
                 : "Search by meaning or concept..."
             }
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
         </div>
 
@@ -212,33 +174,15 @@ export default function Dashboard() {
             </div>
 
             <div className="results-list">
-              {mockSearchResults.map((result) => (
-                <div key={result.id} className="result-card">
-                  {/* Dynamic Icon Color based on file type */}
-                  <div className={`result-icon icon-${result.type}`}>
-                    {result.icon}
-                  </div>
-
-                  <div className="result-content">
-                    <div className="result-title-row">
-                      <span className="result-title">{result.name}</span>
-                      <span className="result-badge">{result.badge}</span>
-                    </div>
-                    <div className="result-excerpt">{result.excerpt}</div>
-                    <div className="result-path">{result.path}</div>
-                  </div>
-
-                  {/* THE PIN BUTTON FOR AGENT MODE */}
-                  <button
-                    className="btn-pin"
-                    title="Pin to AI Context"
-                    onClick={() =>
-                      alert(`Pinned ${result.name} to AI context!`)
-                    }
-                  >
-                    +
-                  </button>
-                </div>
+              {results.map((result) => (
+                <SearchResultCard
+                  key={result.file_path}
+                  result={result}
+                  showPin
+                  onPin={() =>
+                    alert(`Pinned ${result.filename} to AI context!`)
+                  }
+                />
               ))}
             </div>
           </div>
@@ -292,30 +236,20 @@ export default function Dashboard() {
           </div>
 
           <div className="results-list">
-            {mockSearchResults.map((result, index) => (
-              <div
-                key={result.id}
-                // We make the first item "active" to match your screenshot
-                className={`result-card ${index === 0 ? "active" : ""}`}
-              >
-                {/* Dynamic Icon Color based on file type */}
-                <div className={`result-icon icon-${result.type}`}>
-                  {result.icon}
-                </div>
-
-                <div className="result-content">
-                  <div className="result-title-row">
-                    <span className="result-title">{result.name}</span>
-                    <span className="result-badge">{result.badge}</span>
-                  </div>
-                  <div className="result-excerpt">{result.excerpt}</div>
-                  <div className="result-path">{result.path}</div>
-                </div>
-
-                {/* Only show the blue chevron on the active item */}
-                {index === 0 && <div className="result-arrow">❯</div>}
+            {results.length > 0 ? (
+              results.map((result, index) => (
+                <SearchResultCard
+                  key={result.file_path}
+                  result={result}
+                  isActive={index === 0}
+                  showChevron={index === 0}
+                />
+              ))
+            ) : (
+              <div className="empty-results">
+                No results yet. Enter a query to search your indexed documents.
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}

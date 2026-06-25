@@ -1,15 +1,22 @@
 import { API_BASE_URL } from "../config/api";
+import {
+  IndexFileRequest,
+  PendingFilesResponse,
+  SearchRequest,
+  SearchResponse,
+} from "../types/document";
 
-export const scanPendingFiles = async (): Promise<PendingFiles | null> => {
-  const response = await fetch(`${API_BASE_URL}/scan-pending`);
+export const scanPendingFiles =
+  async (): Promise<PendingFilesResponse | null> => {
+    const response = await fetch(`${API_BASE_URL}/scan-pending`);
 
-  if (!response.ok) {
-    throw new Error("Error scaning pending files");
-  }
-  return response.json();
-};
+    if (!response.ok) {
+      throw new Error("Error scaning pending files");
+    }
+    return response.json();
+  };
 
-export const indexFile = async (payload: IndexFile) => {
+export const indexFile = async (payload: IndexFileRequest) => {
   const response = await fetch(`${API_BASE_URL}/index`, {
     method: "POST",
     headers: {
@@ -24,7 +31,9 @@ export const indexFile = async (payload: IndexFile) => {
   return response.json();
 };
 
-export const searchDocument = async (payload: SearchDocument) => {
+export const searchDocument = async (
+  payload: SearchRequest,
+): Promise<SearchResponse> => {
   const response = await fetch(`${API_BASE_URL}/search`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
