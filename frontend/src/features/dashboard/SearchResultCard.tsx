@@ -38,6 +38,19 @@ const getResultTypeMeta = (filename: string) => {
   );
 };
 
+const getMatchScore = (distance: number) => {
+  const normalized = Math.max(0, Math.min(1, 1 - distance / 2));
+  return Math.round(normalized * 100);
+};
+
+const getMatchLevel = (distance: number) => {
+  const score = getMatchScore(distance);
+  if (score >= 85) return { label: "Excellent", color: "#22c55e" };
+  if (score >= 70) return { label: "Strong", color: "#3b82f6" };
+  if (score >= 45) return { label: "Moderate", color: "#f97316" };
+  return { label: "Weak", color: "#ef4444" };
+};
+
 export default function SearchResultCard({
   result,
   isActive,
@@ -46,6 +59,8 @@ export default function SearchResultCard({
   onPin,
 }: SearchResultCardProps) {
   const { icon, badge } = getResultTypeMeta(result.filename);
+  const matchScore = getMatchScore(result.distance);
+  const matchLevel = getMatchLevel(result.distance);
 
   return (
     <div className={`result-card ${isActive ? "active" : ""}`}>
@@ -57,6 +72,23 @@ export default function SearchResultCard({
           <span className="result-badge">{badge}</span>
         </div>
         <div className="result-excerpt">{result.excerpt}</div>
+
+        <div className="match-row">
+          <div className="match-bar-track">
+            <div
+              className="match-bar-fill"
+              style={{
+                width: `${matchScore}%`,
+                backgroundColor: matchLevel.color,
+              }}
+            />
+          </div>
+          <span className="match-text" style={{ color: matchLevel.color }}>
+            {matchLevel.label.toLowerCase()} match
+          </span>
+          <span className="match-percent">{matchScore}%</span>
+        </div>
+
         <div className="result-path">{result.file_path}</div>
       </div>
 

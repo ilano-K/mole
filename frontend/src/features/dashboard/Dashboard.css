@@ -130,6 +130,43 @@
   min-width: 0;
 }
 
+.match-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.match-bar-track {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+  flex: 1 1 130px;
+  max-width: 170px;
+}
+
+.match-bar-fill {
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.match-text {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.match-percent {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
 .result-title-row {
   display: flex;
   align-items: center;
