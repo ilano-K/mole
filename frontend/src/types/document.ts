@@ -9,6 +9,7 @@ export interface IndexFileRequest {
 export interface SearchRequest {
   query: string;
   n_results?: number;
+  unique_results?: boolean;
 }
 
 export interface SearchResult {

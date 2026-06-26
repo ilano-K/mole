@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from app.schemas.document import (
     ScanPendingFileResponse, 
     SearchRequest, 
@@ -28,4 +27,7 @@ def scan_pending_files(db: DB):
 
 @router.post('/search', response_model=SearchResponse)
 def search_document(payload: SearchRequest):
-    return document_service.search_documents(payload.query, payload.n_results)
+    return document_service.search_documents(
+        payload.query, payload.n_results, 
+        payload.unique_results
+    )

@@ -15,7 +15,8 @@ class ScanPendingFileResponse(BaseModel):
 
 class SearchRequest(BaseModel):
     query: str
-    n_results: int = 5
+    n_results: int = 10
+    unique_results: bool = True
 
 class SearchResult(DocumentBase):
     excerpt: str 

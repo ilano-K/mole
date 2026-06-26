@@ -108,8 +108,10 @@ def process_scan_files(db: Session):
         files=pending_files
     )
 
-def search_documents(query: str, n_results: int = 5):
+def search_documents(query: str, n_results: int = 5, unique_results: bool = False):
     raw = engine.search_documents(query, n_results)
+    
+    seen = set()
     results = []
     
     for doc, meta, dist in zip(
@@ -117,10 +119,16 @@ def search_documents(query: str, n_results: int = 5):
         raw["metadatas"],
         raw["distances"]
     ):
+        file_path = meta['file_path']
+        
+        if unique_results and file_path in seen:
+            continue 
+        seen.add(file_path)
+        
         results.append(
             SearchResult(
                 filename=os.path.basename(meta['file_path']),
-                file_path=meta['file_path'],
+                file_path=file_path,
                 excerpt=doc[:250],
                 distance=dist,
             )
