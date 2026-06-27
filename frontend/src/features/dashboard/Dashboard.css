@@ -487,3 +487,38 @@
 .btn-pin:active {
   transform: scale(0.95);
 }
+
+/* The Open Button */
+.btn-open {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition:
+    transform 0.14s ease,
+    background-color 0.14s ease,
+    color 0.14s ease;
+  font-size: 1.05rem; /* size for the icon */
+}
+
+.btn-open:hover {
+  background-color: var(--primary-blue);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-open:active {
+  transform: scale(0.98);
+}
+
+.btn-open-icon {
+  line-height: 1;
+}

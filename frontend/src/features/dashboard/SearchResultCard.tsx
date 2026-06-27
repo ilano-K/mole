@@ -6,6 +6,8 @@ interface SearchResultCardProps {
   showPin?: boolean;
   showChevron?: boolean;
   onPin?: () => void;
+  showOpen?: boolean;
+  onOpen?: () => void;
 }
 
 const typeMetadata: Record<string, { icon: string; badge: string }> = {
@@ -56,7 +58,9 @@ export default function SearchResultCard({
   isActive,
   showPin = false,
   showChevron = false,
+  showOpen = true,
   onPin,
+  onOpen,
 }: SearchResultCardProps) {
   const { icon, badge } = getResultTypeMeta(result.filename);
   const matchScore = getMatchScore(result.distance);
@@ -91,6 +95,52 @@ export default function SearchResultCard({
 
         <div className="result-path">{result.file_path}</div>
       </div>
+
+      {showOpen ? (
+        <button
+          className="btn-open"
+          title="Open file"
+          aria-label={`Open ${result.filename}`}
+          onClick={() => onOpen && onOpen()}
+        >
+          <span className="btn-open-icon" aria-hidden="true">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <polyline
+                points="15 3 21 3 21 9"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <line
+                x1="10"
+                y1="14"
+                x2="21"
+                y2="3"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </button>
+      ) : null}
 
       {showPin && onPin ? (
         <button className="btn-pin" title="Pin to AI Context" onClick={onPin}>
