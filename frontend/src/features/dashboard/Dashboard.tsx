@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const loadPendingFiles = async () => {
+  const fetchPendingFiles = async () => {
     try {
       const resultScan = await scanPendingFiles();
       setPendingFiles(resultScan?.files ?? []);
@@ -38,14 +38,14 @@ export default function Dashboard() {
     useSync();
 
   useEffect(() => {
-    loadPendingFiles();
+    fetchPendingFiles();
   }, []);
 
   useEffect(() => {
     if (isComplete) {
       setTimeout(() => {
         setShowSyncModal(false);
-        loadPendingFiles(); // This re-scans the folder, dropping the banner count to 0!
+        fetchPendingFiles(); // This re-scans the folder, dropping the banner count to 0!
       }, 1000); // Wait 1 second so the user sees it hit 100%
     }
   }, [isComplete]);
