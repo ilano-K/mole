@@ -1,4 +1,5 @@
 import { SearchResult } from "../../types/document";
+import { openPath } from "@tauri-apps/plugin-opener";
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -101,7 +102,17 @@ export default function SearchResultCard({
           className="btn-open"
           title="Open file"
           aria-label={`Open ${result.filename}`}
-          onClick={() => onOpen && onOpen()}
+          onClick={async () => {
+            try {
+              if (onOpen) {
+                await onOpen();
+              } else {
+                await openPath(result.file_path);
+              }
+            } catch (err) {
+              console.error("Failed to open path:", err);
+            }
+          }}
         >
           <span className="btn-open-icon" aria-hidden="true">
             <svg

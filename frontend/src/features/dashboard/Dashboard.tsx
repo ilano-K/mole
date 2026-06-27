@@ -7,6 +7,7 @@ import { fetchAppConfig } from "../../api/config";
 import { useSync } from "../../hooks/useSync";
 import { SearchResponse, SearchResult } from "../../types/document";
 import SearchResultCard from "./SearchResultCard";
+import { openPath } from "@tauri-apps/plugin-opener";
 
 export default function Dashboard() {
   const [isAgentActive, setIsAgentActive] = useState(true);
@@ -182,6 +183,22 @@ export default function Dashboard() {
                   onPin={() =>
                     alert(`Pinned ${result.filename} to AI context!`)
                   }
+                  onOpen={async () => {
+                    try {
+                      console.log(result.file_path);
+                      await openPath(result.file_path);
+                    } catch (err) {
+                      console.error("openPath failed:", err);
+                      try {
+                        await navigator.clipboard.writeText(result.file_path);
+                        alert(
+                          `Could not open file directly. Path copied to clipboard:\n${result.file_path}`,
+                        );
+                      } catch (copyErr) {
+                        alert(`Could not open file. Path: ${result.file_path}`);
+                      }
+                    }
+                  }}
                 />
               ))}
             </div>
