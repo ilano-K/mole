@@ -1,7 +1,7 @@
 import { Route, Navigate, Routes } from "react-router-dom";
 import LoadingScreen from "./components/LoadingScreen";
 import Dashboard from "./features/dashboard/Dashboard";
-import SelectDirectory from "./features/setup/SelectDirectory";
+import Setup from "./features/setup/Setup";
 import { useStartup } from "./hooks/useStartup";
 import SyncProgress from "./features/sync/SyncProgress";
 
@@ -23,7 +23,7 @@ export default function App() {
       }}
     >
       <Routes>
-        <Route path="/setup" element={<SelectDirectory />} />
+        <Route path="/setup" element={<Setup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sync" element={<SyncProgress />} />
         <Route
