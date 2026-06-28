@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [, setIsSearching] = useState(false);
 
   const fetchPendingFiles = async () => {
     try {
@@ -45,8 +45,8 @@ export default function Dashboard() {
     if (isComplete) {
       setTimeout(() => {
         setShowSyncModal(false);
-        fetchPendingFiles(); // This re-scans the folder, dropping the banner count to 0!
-      }, 1000); // Wait 1 second so the user sees it hit 100%
+        fetchPendingFiles();
+      }, 1000);
     }
   }, [isComplete]);
 

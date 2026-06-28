@@ -1,4 +1,3 @@
-import React from "react";
 import "./SyncProgress.css";
 
 // We define props so you can easily feed real data from FastAPI into this UI later!
