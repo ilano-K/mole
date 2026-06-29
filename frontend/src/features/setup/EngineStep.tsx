@@ -1,9 +1,11 @@
+import { EmbeddingProvider } from "../../enums/config";
+
 interface EngineStepProps {
-  engineOption: "builtin" | "ollama" | "cloud";
+  engineOption: EmbeddingProvider;
   ollamaModel: string;
   provider: string;
   apiKey: string;
-  onSelectEngine: (option: "builtin" | "ollama" | "cloud") => void;
+  onSelectEngine: (option: EmbeddingProvider) => void;
   onChangeOllamaModel: (model: string) => void;
   onChangeProvider: (provider: string) => void;
   onChangeApiKey: (key: string) => void;
@@ -27,8 +29,8 @@ export default function EngineStep({
       <div className="engine-options">
         <button
           type="button"
-          className={`engine-option-card ${engineOption === "builtin" ? "selected" : ""}`}
-          onClick={() => onSelectEngine("builtin")}
+          className={`engine-option-card ${engineOption === EmbeddingProvider.DEFAULT ? "selected" : ""}`}
+          onClick={() => onSelectEngine(EmbeddingProvider.DEFAULT)}
         >
           <div className="engine-option-top">
             <h3 className="engine-option-title">Mole Built-in</h3>
@@ -42,8 +44,8 @@ export default function EngineStep({
 
         <button
           type="button"
-          className={`engine-option-card ${engineOption === "ollama" ? "selected" : ""}`}
-          onClick={() => onSelectEngine("ollama")}
+          className={`engine-option-card ${engineOption === EmbeddingProvider.OLLAMA ? "selected" : ""}`}
+          onClick={() => onSelectEngine(EmbeddingProvider.OLLAMA)}
         >
           <div className="engine-option-top">
             <h3 className="engine-option-title">Local Server (Ollama)</h3>
@@ -56,8 +58,8 @@ export default function EngineStep({
 
         <button
           type="button"
-          className={`engine-option-card ${engineOption === "cloud" ? "selected" : ""}`}
-          onClick={() => onSelectEngine("cloud")}
+          className={`engine-option-card ${engineOption === EmbeddingProvider.CLOUD ? "selected" : ""}`}
+          onClick={() => onSelectEngine(EmbeddingProvider.CLOUD)}
         >
           <div className="engine-option-top">
             <h3 className="engine-option-title">Cloud API</h3>
@@ -69,7 +71,7 @@ export default function EngineStep({
         </button>
       </div>
 
-      {engineOption === "ollama" && (
+      {engineOption === EmbeddingProvider.OLLAMA && (
         <div className="engine-form-section">
           <label className="engine-field-label" htmlFor="ollama-model">
             Select Ollama Model
@@ -89,7 +91,7 @@ export default function EngineStep({
         </div>
       )}
 
-      {engineOption === "cloud" && (
+      {engineOption === EmbeddingProvider.CLOUD && (
         <div className="engine-form-section">
           <label className="engine-field-label" htmlFor="provider">
             Provider

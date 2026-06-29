@@ -4,26 +4,36 @@ import { useNavigate } from "react-router-dom";
 import DirectoryStep from "./DirectoryStep";
 import EngineStep from "./EngineStep";
 import { saveConfig } from "../../api/config";
+import { EmbeddingProvider } from "../../enums/config";
 
 const FILE_TYPES = [".pdf", ".docx", ".txt"];
 const OLLAMA_MODELS = ["nomic-embed-text", "mxbai-embed-large"];
 const PROVIDERS = ["OpenAI", "Jina AI"];
 
 type SetupStep = 1 | 2;
-type EngineOption = "builtin" | "ollama" | "cloud";
+
+interface SetupState {
+  targetDir: string;
+  includeSubfolders: boolean;
+  fileTypes: string[];
+  engineOption: EmbeddingProvider;
+  ollamaModel: string;
+  cloudProvider: string;
+  apiKey: string;
+}
 
 export default function Setup() {
   const navigate = useNavigate();
   const [step, setStep] = useState<SetupStep>(1);
-  const [setup, setSetup] = useState({
+  const [setup, setSetup] = useState<SetupState>({
     targetDir: "",
     includeSubfolders: true,
     fileTypes: FILE_TYPES,
+    engineOption: EmbeddingProvider.DEFAULT,
+    ollamaModel: OLLAMA_MODELS[0],
+    cloudProvider: PROVIDERS[0],
+    apiKey: "",
   });
-  const [engineOption, setEngineOption] = useState<EngineOption>("builtin");
-  const [ollamaModel, setOllamaModel] = useState(OLLAMA_MODELS[0]);
-  const [provider, setProvider] = useState(PROVIDERS[0]);
-  const [apiKey, setApiKey] = useState("");
 
   const selectFolder = async () => {
     try {
@@ -68,11 +78,21 @@ export default function Setup() {
       return;
     }
 
+    let model = "all-MiniLM-L6-v2";
+    if (setup.engineOption === EmbeddingProvider.OLLAMA) {
+      model = setup.ollamaModel;
+    } else if (setup.engineOption === EmbeddingProvider.CLOUD) {
+      model = setup.cloudProvider;
+    }
+
     try {
       await saveConfig({
         target_directory: setup.targetDir,
         include_subfolders: setup.includeSubfolders,
         allowed_extensions: setup.fileTypes,
+        embedding_provider: setup.engineOption,
+        embedding_model: model,
+        api_key: setup.apiKey,
       });
 
       navigate("/dashboard");
@@ -129,14 +149,22 @@ export default function Setup() {
             />
           ) : (
             <EngineStep
-              engineOption={engineOption}
-              ollamaModel={ollamaModel}
-              provider={provider}
-              apiKey={apiKey}
-              onSelectEngine={setEngineOption}
-              onChangeOllamaModel={setOllamaModel}
-              onChangeProvider={setProvider}
-              onChangeApiKey={setApiKey}
+              engineOption={setup.engineOption}
+              ollamaModel={setup.ollamaModel}
+              provider={setup.cloudProvider}
+              apiKey={setup.apiKey}
+              onSelectEngine={(value) =>
+                setSetup((prev) => ({ ...prev, engineOption: value }))
+              }
+              onChangeOllamaModel={(value) =>
+                setSetup((prev) => ({ ...prev, ollamaModel: value }))
+              }
+              onChangeProvider={(value) =>
+                setSetup((prev) => ({ ...prev, cloudProvider: value }))
+              }
+              onChangeApiKey={(value) =>
+                setSetup((prev) => ({ ...prev, apiKey: value }))
+              }
             />
           )}
 
