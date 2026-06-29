@@ -1,7 +1,11 @@
-from sqlalchemy import Column, Integer, String, Boolean, JSON, DateTime, Float
+from sqlalchemy import (
+    Column, Integer, String, Boolean, 
+    JSON, DateTime, Float, 
+    Enum as SQLAlchemyEnum
+)
 from datetime import datetime, timezone
 from app.database.database import Base
-
+from app.enums.embedding import EmbeddingProvider
 def get_utc_now():
     return datetime.now(timezone.utc)
 # Config Table
@@ -12,6 +16,11 @@ class AppConfig(Base):
     target_directory = Column(String, nullable=False)
     include_subfolders = Column(Boolean, default=True)
     allowed_extensions = Column(JSON, nullable=False)
+    
+    embedding_provider = Column(SQLAlchemyEnum(EmbeddingProvider), default=EmbeddingProvider.DEFAULT, nullable=False)
+    embedding_model = Column(String, default="all-MiniLM-L6-v2", nullable=False)
+    api_key = Column(String, nullable=True)
+    
     updated_at = Column(DateTime(timezone=True), default=get_utc_now, onupdate=get_utc_now)
 
 # Documents table

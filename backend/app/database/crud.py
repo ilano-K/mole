@@ -18,12 +18,18 @@ def upsert_config(db: Session, config_data: AppConfigCreate):
         db_config.target_directory = config_data.target_directory
         db_config.allowed_extensions = config_data.allowed_extensions
         db_config.include_subfolders = config_data.include_subfolders
+        db_config.embedding_provider = config_data.embedding_provider
+        db_config.embedding_model = config_data.embedding_model
+        db_config.api_key = config_data.api_key
     else:
         db_config = models.AppConfig(
             id=1,
             target_directory=config_data.target_directory,
             include_subfolders=config_data.include_subfolders,
-            allowed_extensions=config_data.allowed_extensions
+            allowed_extensions = config_data.allowed_extensions,
+            embedding_provider = config_data.embedding_provider,
+            embedding_model = config_data.embedding_model,
+            api_key = config_data.api_key,
         )
         db.add(db_config)
     
