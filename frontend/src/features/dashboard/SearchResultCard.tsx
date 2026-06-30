@@ -1,5 +1,16 @@
 import { SearchResult } from "../../types/document";
 import { openPath } from "@tauri-apps/plugin-opener";
+import {
+  FileText,
+  FileSpreadsheet,
+  Image,
+  FileJson,
+  Globe2,
+  File,
+  ExternalLink,
+  type LucideIcon,
+} from "lucide-react";
+import "./SearchResultCard.css";
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -11,32 +22,36 @@ interface SearchResultCardProps {
   onOpen?: () => void;
 }
 
-const typeMetadata: Record<string, { icon: string; badge: string }> = {
-  pdf: { icon: "📄", badge: "PDF" },
-  docx: { icon: "📝", badge: "DOCX" },
-  doc: { icon: "📝", badge: "DOC" },
-  txt: { icon: "📃", badge: "TXT" },
-  md: { icon: "📄", badge: "MD" },
-  xlsx: { icon: "📊", badge: "XLSX" },
-  xls: { icon: "📊", badge: "XLS" },
-  csv: { icon: "📑", badge: "CSV" },
-  pptx: { icon: "📈", badge: "PPTX" },
-  ppt: { icon: "📈", badge: "PPT" },
-  png: { icon: "🖼️", badge: "PNG" },
-  jpg: { icon: "🖼️", badge: "JPG" },
-  jpeg: { icon: "🖼️", badge: "JPEG" },
-  gif: { icon: "🖼️", badge: "GIF" },
-  json: { icon: "🧾", badge: "JSON" },
-  html: { icon: "🌐", badge: "HTML" },
-  default: { icon: "📄", badge: "FILE" },
+const typeMetadata: Record<
+  string,
+  { icon: LucideIcon; badge: string; color: string }
+> = {
+  pdf: { icon: FileText, badge: "PDF", color: "#fb7185" },
+  docx: { icon: FileText, badge: "DOCX", color: "#60a5fa" },
+  doc: { icon: FileText, badge: "DOC", color: "#60a5fa" },
+  txt: { icon: FileText, badge: "TXT", color: "#38bdf8" },
+  md: { icon: FileText, badge: "MD", color: "#8b5cf6" },
+  xlsx: { icon: FileSpreadsheet, badge: "XLSX", color: "#22c55e" },
+  xls: { icon: FileSpreadsheet, badge: "XLS", color: "#22c55e" },
+  csv: { icon: FileSpreadsheet, badge: "CSV", color: "#fbbf24" },
+  pptx: { icon: FileText, badge: "PPTX", color: "#fb923c" },
+  ppt: { icon: FileText, badge: "PPT", color: "#fb923c" },
+  png: { icon: Image, badge: "PNG", color: "#60a5fa" },
+  jpg: { icon: Image, badge: "JPG", color: "#60a5fa" },
+  jpeg: { icon: Image, badge: "JPEG", color: "#60a5fa" },
+  gif: { icon: Image, badge: "GIF", color: "#60a5fa" },
+  json: { icon: FileJson, badge: "JSON", color: "#22d3ee" },
+  html: { icon: Globe2, badge: "HTML", color: "#38bdf8" },
+  default: { icon: File, badge: "FILE", color: "#94a3b8" },
 };
 
 const getResultTypeMeta = (filename: string) => {
   const extension = filename.split(".").pop()?.toLowerCase() ?? "";
   return (
     typeMetadata[extension] ?? {
-      icon: "📄",
+      icon: File,
       badge: extension ? extension.toUpperCase() : "FILE",
+      color: "#94a3b8",
     }
   );
 };
@@ -63,20 +78,26 @@ export default function SearchResultCard({
   onPin,
   onOpen,
 }: SearchResultCardProps) {
-  const { icon, badge } = getResultTypeMeta(result.filename);
-  const matchScore = getMatchScore(result.distance);
-  const matchLevel = getMatchLevel(result.distance);
+  const { icon: ResultIcon, badge, color } = getResultTypeMeta(result.filename);
+  const distance = Number.isFinite(result.distance) ? result.distance : 1;
+  const matchScore = getMatchScore(distance);
+  const matchLevel = getMatchLevel(distance);
 
   return (
-    <div className={`result-card ${isActive ? "active" : ""}`}>
-      <div className={`result-icon icon-${badge.toLowerCase()}`}>{icon}</div>
+    <div className={`search-result-card ${isActive ? "active" : ""}`}>
+      <div
+        className="search-result-icon"
+        style={{ backgroundColor: `${color}16`, color }}
+      >
+        <ResultIcon size={20} />
+      </div>
 
-      <div className="result-content">
-        <div className="result-title-row">
-          <span className="result-title">{result.filename}</span>
-          <span className="result-badge">{badge}</span>
+      <div className="search-result-content">
+        <div className="search-result-title-row">
+          <span className="search-result-title">{result.filename}</span>
+          <span className="search-result-badge">{badge}</span>
         </div>
-        <div className="result-excerpt">{result.excerpt}</div>
+        <div className="search-result-excerpt">{result.excerpt}</div>
 
         <div className="match-row">
           <div className="match-bar-track">

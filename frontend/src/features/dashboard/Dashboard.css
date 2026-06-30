@@ -1,5 +1,59 @@
 /* Dashboard.css */
 
+.dashboard-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+/* Glowing Orbs for Glass Refraction */
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.orb-1 {
+  width: 50vw;
+  height: 50vw;
+  max-width: 800px;
+  max-height: 800px;
+  background: rgba(30, 64, 175, 0.35); /* Deep blue */
+  top: -10%;
+  left: -10%;
+  animation: float-slow 18s infinite alternate ease-in-out;
+}
+
+.orb-2 {
+  width: 40vw;
+  height: 40vw;
+  max-width: 600px;
+  max-height: 600px;
+  background: rgba(59, 130, 246, 0.2); /* Brighter blue */
+  bottom: -10%;
+  right: -5%;
+  animation: float-slow 22s infinite alternate-reverse ease-in-out;
+}
+
+@keyframes float-slow {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(40px, 60px) scale(1.1);
+  }
+}
+
 .dashboard-container {
   width: 100%;
   max-width: 1200px;
@@ -7,232 +61,419 @@
   flex-direction: column;
   gap: 20px;
   margin: 0 auto;
-}
-
-/* Keep the dashboard contained to the viewport height so the page
-   doesn't silently scroll. Internal panels will handle their own
-   scrolling (e.g. search results, chat history). */
-.dashboard-container {
-  height: calc(100vh - 64px);
+  height: 100vh;
   overflow: hidden;
-  /* Add horizontal and bottom padding so child panels (like the AI
-     chat sidebar) don't touch the viewport edges. */
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 24px;
+  padding-right: 24px;
   padding-top: 32px;
   padding-bottom: 32px;
   box-sizing: border-box;
-}
-
-/* Semantic Search Area (Agent OFF) */
-.semantic-search-area {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 140px; /* Keeps it relatively slim like your mockup */
-  width: 100%;
-  box-sizing: border-box;
+  position: relative;
+  z-index: 1; /* Sits above the orbs */
 }
 
 /* =========================================
-   SEARCH RESULTS (AGENT OFF)
-   ========================================= */
+GLASSMORPHIC BLUE SURFACES
+========================================= */
+
+/* Shared Glass Base for major panels */
+.search-card,
+.ai-chat-sidebar,
+.semantic-search-area {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.15) 0%,
+    rgba(2, 6, 23, 0.4) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  box-sizing: border-box;
+}
+
+.search-card {
+  width: 100%;
+  max-width: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.search-input-wrapper {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.search-input {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.1rem;
+  width: 100%;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.search-icon {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Toggle Switch UI */
+.agent-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.4s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: rgba(255, 255, 255, 0.8);
+  transition: 0.4s;
+}
+input:checked + .slider {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  border-color: #3b82f6;
+}
+input:checked + .slider:before {
+  transform: translateX(20px);
+  background-color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+.slider.round {
+  border-radius: 24px;
+}
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.toggle-label {
+  color: #e5e7eb;
+}
+.toggle-subtext {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.badge-active {
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+}
+
+/* Settings Subtle Icon */
+.settings-btn-subtle {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.settings-btn-subtle:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+RESULT CARDS (GLASS EDITION)
+========================================= */
+
+.search-results-container,
+.search-results-area-populated {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 10px;
+  padding-left: 0;
+  box-sizing: border-box;
+}
 
 .search-results-container {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.15) 0%,
+    rgba(2, 6, 23, 0.4) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.search-results-container::-webkit-scrollbar,
+.search-results-area-populated::-webkit-scrollbar {
+  width: 6px;
+}
+.search-results-container::-webkit-scrollbar-thumb,
+.search-results-area-populated::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+.results-list {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-/* Make OFF-mode results area fill remaining dashboard space and scroll */
-.search-results-container {
-  flex: 1 1 auto;
-  min-height: 0; /* allow flex children to shrink */
-  overflow-y: auto;
-  padding-right: 10px; /* space for scrollbar */
-}
-
-.search-results-container::-webkit-scrollbar {
-  width: 8px;
-}
-.search-results-container::-webkit-scrollbar-thumb {
-  background-color: var(--bg-element);
-  border-radius: 8px;
 }
 
 .results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  padding: 0 4px;
+  gap: 12px;
+  width: 100%;
 }
 
-.results-list {
+.empty-results {
+  width: 100%;
+}
+
+/* =========================================
+BOTTOM SPLIT LAYOUT & CHAT
+========================================= */
+
+.bottom-split-layout {
+  display: flex;
+  gap: 20px;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.search-results-area-populated {
+  flex: 2;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 10px;
+  padding-left: 0;
+  min-height: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.15) 0%,
+    rgba(2, 6, 23, 0.4) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
-/* The Individual Card */
-.result-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.result-card:hover {
-  background-color: var(--bg-element);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Active / Selected Item Outline */
-.result-card.active {
-  background-color: rgba(37, 88, 184, 0.1); /* Faint blue tint */
-  border-color: var(--primary-blue);
-}
-
-/* File Icons */
-.result-icon {
-  font-size: 1.4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.icon-pdf {
-  color: #f87171;
-} /* Red tint */
-.icon-docx {
-  color: #60a5fa;
-} /* Blue tint */
-.icon-txt {
-  color: #34d399;
-} /* Green tint */
-
-/* Card Content Layout */
-.result-content {
+.ai-chat-sidebar {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  /* Required to make the text ellipsis work inside a flex child */
-  min-width: 0;
+  min-height: 0;
 }
 
-.match-row {
+.chat-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-title-group {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 10px;
-  flex-wrap: wrap;
+  color: #ffffff;
 }
 
-.match-bar-track {
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  height: 8px;
-  overflow: hidden;
-  flex: 1 1 130px;
-  max-width: 170px;
-}
-
-.match-bar-fill {
-  height: 100%;
-  transition: width 0.2s ease;
-}
-
-.match-text {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  text-transform: capitalize;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.match-percent {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  white-space: nowrap;
-}
-
-.result-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.result-title {
+.agent-title {
   font-weight: 600;
-  color: var(--text-main);
   font-size: 0.95rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-
-/* Small File Type Badge */
-.result-badge {
-  background-color: var(--bg-element);
-  color: var(--text-muted);
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.result-excerpt {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  line-height: 1.4;
-  /* Allow excerpts to wrap up to two lines for readability */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  white-space: normal;
-}
-
-/* Muted Monospace Path */
-.result-path {
-  color: rgba(148, 156, 174, 0.4);
+.agent-subtitle {
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.75rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  white-space: normal;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 2px;
 }
 
-.result-arrow {
-  color: var(--primary-blue);
-  font-weight: bold;
-  font-size: 1.1rem;
-  padding-left: 8px;
+.pinned-files {
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-/* Alert Banner */
+
+.chat-history {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.chat-history::-webkit-scrollbar {
+  width: 4px;
+}
+.chat-history::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+/* Glassmorphic Chat Bubble */
+.chat-bubble {
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.15) 0%,
+    rgba(2, 6, 23, 0.5) 100%
+  );
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border-top-left-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #e5e7eb;
+}
+
+.chat-input-area {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #ffffff;
+  outline: none;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s;
+}
+
+.chat-input:focus {
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow:
+    0 0 10px rgba(59, 130, 246, 0.2),
+    inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.btn-send {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-send:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+  transform: translateY(-1px);
+}
+
+/* =========================================
+BANNERS & HELPER BUTTONS
+========================================= */
+
 .alert-banner {
-  background-color: #2a2118; /* Subtle orange/brown tint */
-  border: 1px solid #45321a;
+  /* Orange glass variant */
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.15) 0%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 12px;
   padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.95rem;
+  color: #ffffff;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
+
 .banner-left {
   display: flex;
   align-items: center;
@@ -243,282 +484,76 @@
   align-items: center;
   gap: 12px;
 }
+
 .btn-sync {
-  background-color: #f59e0b; /* Amber/Orange */
+  background: linear-gradient(135deg, #f59e0b, #d97706);
   color: #000;
   border: none;
   border-radius: 6px;
   padding: 6px 16px;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  transition: all 0.2s;
 }
+.btn-sync:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+
 .btn-ignore {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
 }
 .btn-close {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   font-size: 1.1rem;
-}
-
-/* Main Search Card */
-.search-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.search-input-wrapper {
-  background-color: var(--bg-element);
-  border-radius: 8px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.search-input {
-  background: none;
-  border: none;
-  color: var(--text-main);
-  font-size: 1.1rem;
-  width: 100%;
-  outline: none;
-}
-.agent-toggle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap; /* Prevents text from squishing on smaller screens */
-  gap: 16px; /* Adds a buffer between the toggle and the text */
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-.toggle-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.badge-active {
-  background-color: rgba(37, 88, 184, 0.3);
-  color: #60a5fa;
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-left: 8px;
-}
-.toggle-subtext {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-
-/* Bottom Split Layout */
-.bottom-split-layout {
-  display: flex;
-  gap: 20px;
-  flex: 1 1 auto;
-  min-height: 0; /* allow children to shrink and enable internal scrolling */
-  align-items: stretch;
-}
-
-.search-results-area {
-  flex: 2;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.empty-state-text {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-}
-
-/* AI Chat Sidebar */
-.ai-chat-sidebar {
-  flex: 1;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-}
-.chat-header {
-  padding: 16px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.chat-title-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.agent-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-.agent-subtitle {
-  color: var(--text-muted);
-  font-size: 0.75rem;
 }
 .btn-close-chat {
   background: none;
   border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-.pinned-files {
-  padding: 12px 16px;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-color);
-}
-.chat-history {
-  flex: 1;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.chat-bubble {
-  background-color: var(--bg-element);
-  padding: 12px 16px;
-  border-radius: 12px;
-  border-top-left-radius: 4px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-.chat-input-area {
-  padding: 16px;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  gap: 10px;
-}
-.chat-input {
-  flex: 1;
-  background-color: var(--bg-element);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 14px;
-  color: var(--text-main);
-  outline: none;
-}
-.btn-send {
-  background-color: var(--primary-blue);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
 }
 
-/* Update for Agent ON left panel */
-.search-results-area-populated {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  /* Allows the left side to scroll if there are 10+ results, 
-     while keeping the chat window frozen on the right! */
-  max-height: 600px;
-  overflow-y: auto;
-  padding-right: 10px; /* Space for the scrollbar */
-}
-
-/* Ensure flex children that scroll can actually shrink inside the flex layout */
-.search-results-area-populated,
-.ai-chat-sidebar,
-.search-results-area {
-  min-height: 0;
-}
-
-.ai-chat-sidebar .chat-history {
-  overflow-y: auto;
-}
-
-/* Custom Scrollbar for the left panel */
-.search-results-area-populated::-webkit-scrollbar {
-  width: 6px;
-}
-.search-results-area-populated::-webkit-scrollbar-thumb {
-  background-color: var(--bg-element);
-  border-radius: 10px;
-}
-
-/* The Pin Button (+) */
-.btn-pin {
-  background-color: var(--bg-element);
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
+/* File List Action Buttons (+ and Open) */
+.btn-pin,
+.btn-open {
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(59, 130, 246, 0.15);
   border-radius: 8px;
   width: 36px;
   height: 36px;
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.4rem;
-  font-weight: 300;
+  font-size: 1.2rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  flex-shrink: 0; /* Prevents the button from getting squished by long text */
-}
-
-.btn-pin:hover {
-  background-color: var(--primary-blue);
-  color: white;
-  border-color: var(--primary-blue);
-  transform: scale(1.05);
-}
-
-.btn-pin:active {
-  transform: scale(0.95);
-}
-
-/* The Open Button */
-.btn-open {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-  transition:
-    transform 0.14s ease,
-    background-color 0.14s ease,
-    color 0.14s ease;
-  font-size: 1.05rem; /* size for the icon */
 }
 
+.btn-pin:hover,
 .btn-open:hover {
-  background-color: var(--primary-blue);
-  color: #fff;
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.8),
+    rgba(29, 78, 216, 0.8)
+  );
+  color: white;
+  border-color: rgba(96, 165, 250, 0.5);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.btn-open:active {
-  transform: scale(0.98);
-}
-
-.btn-open-icon {
-  line-height: 1;
+.empty-results {
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  padding: 40px 0;
 }

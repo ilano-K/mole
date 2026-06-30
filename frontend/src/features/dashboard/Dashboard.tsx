@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search, Settings2, Sparkles } from "lucide-react";
 import "./Dashboard.css";
 import { scanPendingFiles, searchDocument } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
@@ -20,11 +22,14 @@ export default function Dashboard() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [, setIsSearching] = useState(false);
 
+  const navigate = useNavigate();
+  const { totalFiles, indexedFiles, currentFileName, isComplete, startSync } =
+    useSync();
+
   const fetchPendingFiles = async () => {
     try {
       const resultScan = await scanPendingFiles();
       setPendingFiles(resultScan?.files ?? []);
-
       const resultConfig = await fetchAppConfig();
       setSelectedDirectory(resultConfig?.target_directory ?? "");
     } catch (error) {
@@ -33,9 +38,6 @@ export default function Dashboard() {
       setIsLoadingPending(false);
     }
   };
-
-  const { totalFiles, indexedFiles, currentFileName, isComplete, startSync } =
-    useSync();
 
   useEffect(() => {
     fetchPendingFiles();
@@ -56,7 +58,6 @@ export default function Dashboard() {
 
   const handleSearch = async () => {
     if (!query.trim()) return;
-
     try {
       setIsSearching(true);
       const response = await searchDocument({ query });
@@ -67,9 +68,11 @@ export default function Dashboard() {
       setIsSearching(false);
     }
   };
+
+  const displayResults = results;
+
   return (
     <div className="dashboard-container">
-      {/* 1. THE NOTIFICATION BANNER */}
       {showBanner && pendingFiles.length > 0 && (
         <div className="alert-banner">
           <div className="banner-left">
@@ -101,7 +104,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Sync modal popup */}
       {showSyncModal && (
         <div
           className="sync-modal-overlay"
@@ -117,10 +119,9 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* 2. THE MAIN SEARCH CARD */}
       <div className="search-card">
         <div className="search-input-wrapper">
-          <span className="search-icon">🔍</span>
+          <Search size={18} className="search-icon" />
           <input
             type="text"
             className="search-input"
@@ -138,7 +139,6 @@ export default function Dashboard() {
             }}
           />
         </div>
-
         <div className="agent-toggle-row">
           <div className="toggle-group">
             <label className="switch">
@@ -150,32 +150,38 @@ export default function Dashboard() {
               <span className="slider round"></span>
             </label>
             <span className="toggle-label">
-              ✨ AI Agent Mode{" "}
+              ✨ AI Agent Mode
               {isAgentActive && <span className="badge-active">Active</span>}
             </span>
           </div>
-          {/* Dynamically swap the subtext based on the toggle state */}
-          <span className="toggle-subtext">
-            {isAgentActive
-              ? "AI reads documents to chat and synthesize answers with citations"
-              : "Fast semantic search - instantly fetches matching files"}
-          </span>
+          <button
+            type="button"
+            className="settings-btn-subtle"
+            onClick={() => navigate("/settings")}
+            title="Settings"
+            aria-label="Settings"
+          >
+            <Settings2 size={18} />
+          </button>
         </div>
+        <span className="toggle-subtext">
+          {isAgentActive
+            ? "AI reads documents to chat and synthesize answers with citations"
+            : "Fast semantic search - instantly fetches matching files"}
+        </span>
       </div>
 
-      {/* 3. THE DYNAMIC BOTTOM LAYOUT */}
       {isAgentActive ? (
-        // --- AGENT IS ON: Show the Split Layout ---
         <div className="bottom-split-layout">
-          {/* Left Side: Populated Search Results Area */}
           <div className="search-results-area-populated">
             <div className="results-header">
-              <span>5 results for "asdasda"</span>
+              <span>
+                {displayResults.length} results for "{query && "..."}"
+              </span>
               <span>Click + to pin files to agent context</span>
             </div>
-
             <div className="results-list">
-              {results.map((result) => (
+              {displayResults.map((result) => (
                 <SearchResultCard
                   key={result.file_path}
                   result={result}
@@ -185,7 +191,6 @@ export default function Dashboard() {
                   }
                   onOpen={async () => {
                     try {
-                      console.log(result.file_path);
                       await openPath(result.file_path);
                     } catch (err) {
                       console.error("openPath failed:", err);
@@ -203,12 +208,10 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-
-          {/* Right Side: AI Chat Sidebar */}
           <div className="ai-chat-sidebar">
             <div className="chat-header">
               <div className="chat-title-group">
-                <span className="agent-icon">🤖</span>
+                <Sparkles className="agent-icon" size={18} />
                 <div>
                   <div className="agent-title">AI Agent</div>
                   <div className="agent-subtitle">Local • Ollama</div>
@@ -221,11 +224,9 @@ export default function Dashboard() {
                 ✕
               </button>
             </div>
-
             <div className="pinned-files">
               No files pinned — use + on search results to add context
             </div>
-
             <div className="chat-history">
               <div className="chat-bubble">
                 Hello! I'm your local AI agent. Pin files from your search
@@ -233,7 +234,6 @@ export default function Dashboard() {
                 anything about them. I can also search your file index for you.
               </div>
             </div>
-
             <div className="chat-input-area">
               <input
                 type="text"
@@ -245,22 +245,17 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        // --- AGENT IS OFF: Show the Standard Semantic Search Area ---
         <div className="search-results-container">
           <div className="results-header">
-            <span>5 results for "asdasda"</span>
+            <span>
+              {displayResults.length} results for "{query || "..."}"
+            </span>
             <span>Use ↑↓ to navigate · Enter to open</span>
           </div>
-
           <div className="results-list">
-            {results.length > 0 ? (
-              results.map((result, index) => (
-                <SearchResultCard
-                  key={result.file_path}
-                  result={result}
-                  isActive={index === 0}
-                  showChevron={index === 0}
-                />
+            {displayResults.length > 0 ? (
+              displayResults.map((result) => (
+                <SearchResultCard key={result.file_path} result={result} />
               ))
             ) : (
               <div className="empty-results">
