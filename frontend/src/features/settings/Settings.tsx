@@ -12,6 +12,7 @@ import "./Settings.css";
 import { fetchAppConfig, saveConfig } from "../../api/config";
 import { AppConfigBase } from "../../types/config";
 import { EmbeddingProvider } from "../../enums/config";
+import { useToast } from "../../components/ToastProvider";
 
 type Tab =
   | "Search"
@@ -23,6 +24,7 @@ type Tab =
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<Tab>("Library");
@@ -74,9 +76,10 @@ export default function Settings() {
   const handleContinue = async () => {
     try {
       await saveConfig(config);
-      navigate("/dashboard");
+      showToast("Settings saved successfully.", "success");
     } catch (error) {
       console.error(error);
+      showToast("Could not save settings. Please try again.", "error");
     }
   };
   const TABS: { name: Tab; icon: ReactNode }[] = [
