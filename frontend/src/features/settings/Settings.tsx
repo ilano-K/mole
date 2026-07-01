@@ -9,7 +9,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import "./Settings.css";
-import { fetchAppConfig } from "../../api/config";
+import { fetchAppConfig, saveConfig } from "../../api/config";
 import { AppConfigBase } from "../../types/config";
 import { EmbeddingProvider } from "../../enums/config";
 
@@ -72,7 +72,12 @@ export default function Settings() {
   }, []);
 
   const handleContinue = async () => {
-    return;
+    try {
+      await saveConfig(config);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+    }
   };
   const TABS: { name: Tab; icon: ReactNode }[] = [
     { name: "Search", icon: <Search size={16} /> },
