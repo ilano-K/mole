@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "../config/api";
-import { AppConfig, AppConfigCreate } from "../types/config";
+import { AppConfigResponse, AppConfigCreate } from "../types/config";
 
-export const fetchAppConfig = async (): Promise<AppConfig | null> => {
+export const fetchAppConfig = async (): Promise<AppConfigResponse | null> => {
   const response = await fetch(`${API_BASE_URL}/config`);
 
   if (response.status === 404) return null;

@@ -1,6 +1,6 @@
 import { EmbeddingProvider } from "../enums/config";
 
-interface AppConfigBase {
+export interface AppConfigBase {
   target_directory: string;
   include_subfolders: boolean;
   allowed_extensions: string[];
@@ -9,7 +9,7 @@ interface AppConfigBase {
   api_key?: string;
 }
 
-export interface AppConfig extends AppConfigBase {
+export interface AppConfigResponse extends AppConfigBase {
   id: number;
   updated_at?: string;
 }

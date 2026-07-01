@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -9,6 +9,9 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import "./Settings.css";
+import { fetchAppConfig } from "../../api/config";
+import { AppConfigBase } from "../../types/config";
+import { EmbeddingProvider } from "../../enums/config";
 
 type Tab =
   | "Search"
@@ -25,23 +28,52 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState<Tab>("Library");
 
   // User's Form State
-  const [targetDirectory, setTargetDirectory] = useState("");
-  const [includeSubfolders, setIncludeSubfolders] = useState(true);
-  const [allowedExtensions, setAllowedExtensions] = useState<string[]>([
-    ".pdf",
-    ".docx",
-    ".txt",
-  ]);
-  const [embeddingProvider, setEmbeddingProvider] = useState("default");
-  const [embeddingModel, setEmbeddingModel] = useState("");
-  const [apiKey, setApiKey] = useState("");
+  // const [includeSubfolders, setIncludeSubfolders] = useState(true);
+  // const [allowedExtensions, setAllowedExtensions] = useState<string[]>([
+  //   ".pdf",
+  //   ".docx",
+  //   ".txt",
+  // ]);
+  // const [embeddingProvider, setEmbeddingProvider] = useState("default");
+  // const [embeddingModel, setEmbeddingModel] = useState("");
+  // const [apiKey, setApiKey] = useState("");
+
+  const [config, setConfig] = useState<AppConfigBase>({
+    target_directory: "",
+    include_subfolders: false,
+    allowed_extensions: [".pdf", ".docx", ".txt"],
+    embedding_provider: "default",
+    embedding_model: "",
+    api_key: "",
+  });
 
   const toggleExtension = (ext: string) => {
-    setAllowedExtensions((prev) =>
-      prev.includes(ext) ? prev.filter((item) => item !== ext) : [...prev, ext],
-    );
+    setConfig((prev) => ({
+      ...prev,
+      allowed_extensions: prev.allowed_extensions.includes(ext)
+        ? prev.allowed_extensions.filter((item) => item !== ext)
+        : [...prev.allowed_extensions, ext],
+    }));
   };
 
+  const loadConfig = async () => {
+    try {
+      const config = await fetchAppConfig();
+      if (config) {
+        setConfig(config);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const handleContinue = async () => {
+    return;
+  };
   const TABS: { name: Tab; icon: ReactNode }[] = [
     { name: "Search", icon: <Search size={16} /> },
     { name: "Embeddings", icon: <Cpu size={16} /> },
@@ -101,8 +133,13 @@ export default function Settings() {
                         <input
                           className="settings-input"
                           type="text"
-                          value={targetDirectory}
-                          onChange={(e) => setTargetDirectory(e.target.value)}
+                          value={config.target_directory}
+                          onChange={(e) =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              target_directory: e.target.value,
+                            }))
+                          }
                           placeholder="Select directory..."
                         />
                         <button className="btn-secondary">Browse</button>
@@ -121,9 +158,12 @@ export default function Settings() {
                       <label className="switch">
                         <input
                           type="checkbox"
-                          checked={includeSubfolders}
+                          checked={config.include_subfolders}
                           onChange={(e) =>
-                            setIncludeSubfolders(e.target.checked)
+                            setConfig((prev) => ({
+                              ...prev,
+                              include_subfolders: e.target.checked,
+                            }))
                           }
                         />
                         <span className="slider round"></span>
@@ -153,7 +193,7 @@ export default function Settings() {
                         <button
                           key={ext}
                           type="button"
-                          className={`settings-chip ${allowedExtensions.includes(ext) ? "selected" : ""}`}
+                          className={`settings-chip ${config.allowed_extensions.includes(ext) ? "selected" : ""}`}
                           onClick={() => toggleExtension(ext)}
                         >
                           {ext}
@@ -178,12 +218,22 @@ export default function Settings() {
                     <div className="row-action">
                       <select
                         className="settings-select"
-                        value={embeddingProvider}
-                        onChange={(e) => setEmbeddingProvider(e.target.value)}
+                        value={config.embedding_provider}
+                        onChange={(e) =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            embedding_provider: e.target
+                              .value as EmbeddingProvider,
+                          }))
+                        }
                       >
-                        <option value="default">Built-in</option>
-                        <option value="ollama">Ollama</option>
-                        <option value="cloud">Cloud API</option>
+                        <option value={EmbeddingProvider.DEFAULT}>
+                          Built-in
+                        </option>
+                        <option value={EmbeddingProvider.OLLAMA}>Ollama</option>
+                        <option value={EmbeddingProvider.CLOUD}>
+                          Cloud API
+                        </option>
                       </select>
                     </div>
                   </div>
@@ -197,8 +247,13 @@ export default function Settings() {
                       <input
                         className="settings-input"
                         type="text"
-                        value={embeddingModel}
-                        onChange={(e) => setEmbeddingModel(e.target.value)}
+                        value={config.embedding_model}
+                        onChange={(e) =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            embedding_model: e.target.value,
+                          }))
+                        }
                         placeholder="all-MiniLM-L6-v2"
                       />
                     </div>
@@ -216,8 +271,13 @@ export default function Settings() {
                       <input
                         className="settings-input"
                         type="password"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
+                        value={config.api_key}
+                        onChange={(e) =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            api_key: e.target.value,
+                          }))
+                        }
                         placeholder="sk-..."
                       />
                     </div>
@@ -242,7 +302,9 @@ export default function Settings() {
             >
               Cancel
             </button>
-            <button className="btn-primary">Save Changes</button>
+            <button className="btn-primary" onClick={handleContinue}>
+              Save Changes
+            </button>
           </div>
         </div>
       </div>
