@@ -3,6 +3,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useNavigate } from "react-router-dom";
 import DirectoryStep from "./DirectoryStep";
 import EngineStep from "./EngineStep";
+import "./Setup.css";
 import { saveConfig } from "../../api/config";
 import { EmbeddingProvider } from "../../enums/config";
 
