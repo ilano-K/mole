@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useNavigate } from "react-router-dom";
 import DirectoryStep from "./DirectoryStep";
@@ -6,9 +6,11 @@ import EngineStep from "./EngineStep";
 import "./Setup.css";
 import { saveConfig } from "../../api/config";
 import { EmbeddingProvider } from "../../enums/config";
+import { fetchOllamaModels } from "../../api/ollama";
+import { useToast } from "../../components/ToastProvider";
+import { OllamaModel } from "../../types/ollama";
 
 const FILE_TYPES = [".pdf", ".docx", ".txt"];
-const OLLAMA_MODELS = ["nomic-embed-text", "mxbai-embed-large"];
 const PROVIDERS = ["OpenAI", "Jina AI"];
 
 type SetupStep = 1 | 2;
@@ -31,11 +33,33 @@ export default function Setup() {
     includeSubfolders: true,
     fileTypes: FILE_TYPES,
     engineOption: EmbeddingProvider.DEFAULT,
-    ollamaModel: OLLAMA_MODELS[0],
+    ollamaModel: "",
     cloudProvider: PROVIDERS[0],
     apiKey: "",
   });
 
+  const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
+  const [ollamaLoading, setOllamaLoading] = useState(false);
+  const [ollamaError, setOllamaError] = useState<string | null>(null);
+  const { showToast } = useToast();
+  const getOllamaModels = async () => {
+    setOllamaLoading(true);
+    setOllamaError(null);
+    try {
+      const models = await fetchOllamaModels();
+      setOllamaModels(models);
+      if (!models || models.length === 0) {
+        showToast("No Ollama models found.", "info");
+      }
+    } catch (error: any) {
+      console.error(error);
+      const msg = (error && error.message) || "Failed to connect to Ollama.";
+      setOllamaError(msg);
+      showToast(`Failed to connect to Ollama: ${msg}`, "error");
+    } finally {
+      setOllamaLoading(false);
+    }
+  };
   const selectFolder = async () => {
     try {
       const selected = await open({
@@ -154,9 +178,12 @@ export default function Setup() {
               ollamaModel={setup.ollamaModel}
               provider={setup.cloudProvider}
               apiKey={setup.apiKey}
-              onSelectEngine={(value) =>
-                setSetup((prev) => ({ ...prev, engineOption: value }))
-              }
+              onSelectEngine={async (value) => {
+                setSetup((prev) => ({ ...prev, engineOption: value }));
+                if (value === EmbeddingProvider.OLLAMA) {
+                  await getOllamaModels();
+                }
+              }}
               onChangeOllamaModel={(value) =>
                 setSetup((prev) => ({ ...prev, ollamaModel: value }))
               }
@@ -166,6 +193,9 @@ export default function Setup() {
               onChangeApiKey={(value) =>
                 setSetup((prev) => ({ ...prev, apiKey: value }))
               }
+              availableOllamaModels={ollamaModels}
+              ollamaLoading={ollamaLoading}
+              onRequestModels={getOllamaModels}
             />
           )}
 
@@ -175,7 +205,22 @@ export default function Setup() {
             </button>
             <button
               className="btn-continue"
-              disabled={step === 1 ? !setup.targetDir : false}
+              disabled={
+                step === 1
+                  ? !setup.targetDir
+                  : setup.engineOption === EmbeddingProvider.OLLAMA
+                    ? ollamaLoading || ollamaModels.length === 0
+                    : false
+              }
+              title={
+                step === 2 &&
+                setup.engineOption === EmbeddingProvider.OLLAMA &&
+                (ollamaLoading
+                  ? "Connecting to Ollama..."
+                  : ollamaModels.length === 0
+                    ? "No Ollama models available — cannot save"
+                    : "")
+              }
               onClick={handleContinue}
             >
               {step === 1 ? "Continue" : "Complete Setup"}

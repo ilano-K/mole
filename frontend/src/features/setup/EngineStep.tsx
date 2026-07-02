@@ -1,4 +1,5 @@
 import { EmbeddingProvider } from "../../enums/config";
+import { OllamaModel } from "../../types/ollama";
 
 interface EngineStepProps {
   engineOption: EmbeddingProvider;
@@ -9,9 +10,11 @@ interface EngineStepProps {
   onChangeOllamaModel: (model: string) => void;
   onChangeProvider: (provider: string) => void;
   onChangeApiKey: (key: string) => void;
+  availableOllamaModels: OllamaModel[];
+  ollamaLoading?: boolean;
+  onRequestModels?: () => void;
 }
 
-const OLLAMA_MODELS = ["nomic-embed-text", "mxbai-embed-large"];
 const PROVIDERS = ["OpenAI", "Jina AI"];
 
 export default function EngineStep({
@@ -23,6 +26,9 @@ export default function EngineStep({
   onChangeOllamaModel,
   onChangeProvider,
   onChangeApiKey,
+  availableOllamaModels,
+  ollamaLoading = false,
+  onRequestModels,
 }: EngineStepProps) {
   return (
     <div className="setup-body">
@@ -76,18 +82,41 @@ export default function EngineStep({
           <label className="engine-field-label" htmlFor="ollama-model">
             Select Ollama Model
           </label>
-          <select
-            id="ollama-model"
-            className="engine-select"
-            value={ollamaModel}
-            onChange={(e) => onChangeOllamaModel(e.target.value)}
-          >
-            {OLLAMA_MODELS.map((model) => (
-              <option key={model} value={model}>
-                {model}
-              </option>
-            ))}
-          </select>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <select
+              id="ollama-model"
+              className="engine-select"
+              value={ollamaModel}
+              onChange={(e) => onChangeOllamaModel(e.target.value)}
+              disabled={ollamaLoading || availableOllamaModels.length === 0}
+            >
+              {ollamaLoading ? (
+                <option>Connecting to Ollama...</option>
+              ) : availableOllamaModels.length > 0 ? (
+                availableOllamaModels.map((model) => (
+                  <option key={model.name} value={model.name}>
+                    {model.name}
+                  </option>
+                ))
+              ) : (
+                <option>No models available</option>
+              )}
+            </select>
+            {!ollamaLoading && availableOllamaModels.length === 0 && (
+              <button
+                type="button"
+                className="engine-retry-btn"
+                onClick={() => onRequestModels && onRequestModels()}
+              >
+                Retry
+              </button>
+            )}
+            {ollamaLoading && (
+              <div className="engine-loading-dot" aria-hidden>
+                ●
+              </div>
+            )}
+          </div>
         </div>
       )}
 
