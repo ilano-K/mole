@@ -10,9 +10,9 @@ EMBEDDING_MODELS = {
     "granite-embedding",
 }
 
-router = APIRouter(tags=['ollama'])
+router = APIRouter(prefix="/ollama", tags=['ollama'])
 
-@router.get("/ollama/models", response_model=OllamaModelsResponse)
+@router.get("/models", response_model=OllamaModelsResponse)
 def get_ollama_models():
     # ollama
     try:

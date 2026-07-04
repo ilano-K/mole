@@ -11,7 +11,7 @@ from app.schemas.indexing import (
 from app.services import document_service
 from app.dependencies.db import DB
 
-router = APIRouter(tags=['documents'])
+router = APIRouter(prefix="/documents",tags=['documents'])
 
 @router.post('/index', response_model=IndexResponse)
 def index_file(payload: IndexRequest, db: DB):
@@ -23,7 +23,7 @@ def index_batch(payload: BatchIndexRequest, db: DB):
 
 @router.get('/scan-pending', response_model=ScanPendingFileResponse)
 def scan_pending_files(db: DB):
-    return document_service.process_scan_files(db)
+    return document_service.scan_pending_files(db)
 
 @router.post('/search', response_model=SearchResponse)
 def search_document(payload: SearchRequest):

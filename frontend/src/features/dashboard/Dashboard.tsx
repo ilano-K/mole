@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Settings2, Sparkles } from "lucide-react";
 import "./Dashboard.css";
-import { scanPendingFiles, searchDocument } from "../../api/document";
+import { searchDocument } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
-import SyncProgress from "../sync/SyncProgress";
-import { fetchAppConfig } from "../../api/config";
 import { useSync } from "../../hooks/useSync";
 import { SearchResponse, SearchResult } from "../../types/document";
 import SearchResultCard from "./SearchResultCard";
 import { openPath } from "@tauri-apps/plugin-opener";
+import SyncModal from "../sync/SyncModal";
+import { fetchStatus } from "../../api/status";
 
 export default function Dashboard() {
   const [isAgentActive, setIsAgentActive] = useState(true);
@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [, setIsSearching] = useState(false);
+  const [needsReindex, setNeedsReindex] = useState(false);
 
   const navigate = useNavigate();
   const { totalFiles, indexedFiles, currentFileName, isComplete, startSync } =
@@ -28,10 +29,11 @@ export default function Dashboard() {
 
   const fetchPendingFiles = async () => {
     try {
-      const resultScan = await scanPendingFiles();
-      setPendingFiles(resultScan?.files ?? []);
-      const resultConfig = await fetchAppConfig();
-      setSelectedDirectory(resultConfig?.target_directory ?? "");
+      const status = await fetchStatus();
+      setPendingFiles(status.pending_files ?? []);
+      setSelectedDirectory(status.target_directory ?? "");
+      setNeedsReindex(status.needs_rebuild ?? false);
+      setShowBanner(status.pending_files_count > 0 || status.needs_rebuild);
     } catch (error) {
       console.error(error);
     } finally {
@@ -73,17 +75,28 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      {showBanner && pendingFiles.length > 0 && (
+      {showBanner && (pendingFiles.length > 0 || needsReindex) && (
         <div className="alert-banner">
           <div className="banner-left">
-            <span className="banner-icon">📄</span>
-            <span>
-              <strong style={{ color: "#fbbf24" }}>
-                {pendingFiles.length} new files
-              </strong>{" "}
-              detected in {selectedDirectory}
-            </span>
+            <span className="banner-icon">{needsReindex ? "⚠️" : "📄"}</span>
+
+            {needsReindex ? (
+              <span>
+                <strong style={{ color: "#fbbf24" }}>Reindex required</strong>{" "}
+                because your indexing settings have changed. Your search results
+                may be outdated until you rebuild the index.
+              </span>
+            ) : (
+              <span>
+                <strong style={{ color: "#fbbf24" }}>
+                  {pendingFiles.length} new file
+                  {pendingFiles.length !== 1 ? "s" : ""}
+                </strong>{" "}
+                detected in {selectedDirectory}
+              </span>
+            )}
           </div>
+
           <div className="banner-right">
             <button
               className="btn-sync"
@@ -92,11 +105,13 @@ export default function Dashboard() {
                 startSync(pendingFiles);
               }}
             >
-              Sync Now
+              {needsReindex ? "Reindex Now" : "Sync Now"}
             </button>
+
             <button className="btn-ignore" onClick={() => setShowBanner(false)}>
               Ignore
             </button>
+
             <button className="btn-close" onClick={() => setShowBanner(false)}>
               ✕
             </button>
@@ -104,20 +119,13 @@ export default function Dashboard() {
         </div>
       )}
 
-      {showSyncModal && (
-        <div
-          className="sync-modal-overlay"
-          onClick={() => setShowSyncModal(false)}
-        >
-          <div className="sync-modal" onClick={(e) => e.stopPropagation()}>
-            <SyncProgress
-              totalFiles={totalFiles}
-              indexedFiles={indexedFiles}
-              currentFileName={currentFileName}
-            />
-          </div>
-        </div>
-      )}
+      <SyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        totalFiles={totalFiles}
+        indexedFiles={indexedFiles}
+        currentFileName={currentFileName}
+      />
 
       <div className="search-card">
         <div className="search-input-wrapper">

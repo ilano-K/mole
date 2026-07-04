@@ -80,7 +80,9 @@ def process_index_batch(file_paths: list[str], db: Session):
         failed_files=stats["failed_files"]
     )
 
-def process_scan_files(db: Session):
+
+
+def scan_pending_files(db: Session):
     config = get_config(db)
     if not config:
         raise exceptions.ConfigNotFoundError()

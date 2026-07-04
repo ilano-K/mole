@@ -7,6 +7,7 @@ export interface AppConfigBase {
   embedding_provider: EmbeddingProvider;
   embedding_model?: string;
   api_key?: string;
+  needs_reindex?: boolean;
 }
 
 export interface AppConfigResponse extends AppConfigBase {

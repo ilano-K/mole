@@ -13,6 +13,7 @@ class AppConfigBase(BaseModel):
     embedding_provider: EmbeddingProvider = EmbeddingProvider.DEFAULT
     embedding_model: str = "all-MiniLM-L6-v2"
     api_key: Optional[str] = None
+    needs_reindex: bool = False
     
 class AppConfigCreate(AppConfigBase):
     pass

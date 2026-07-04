@@ -8,7 +8,7 @@ import {
 
 export const scanPendingFiles =
   async (): Promise<PendingFilesResponse | null> => {
-    const response = await fetch(`${API_BASE_URL}/scan-pending`);
+    const response = await fetch(`${API_BASE_URL}/documents/scan-pending`);
 
     if (!response.ok) {
       throw new Error("Error scaning pending files");
@@ -17,7 +17,7 @@ export const scanPendingFiles =
   };
 
 export const indexFile = async (payload: IndexFileRequest) => {
-  const response = await fetch(`${API_BASE_URL}/index`, {
+  const response = await fetch(`${API_BASE_URL}/documents/index`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

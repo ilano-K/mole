@@ -21,7 +21,17 @@ class AppConfig(Base):
     embedding_model = Column(String, default="all-MiniLM-L6-v2", nullable=False)
     api_key = Column(String, nullable=True)
     
+    needs_rebuild = Column(Boolean, default=False, nullable=False)
+    
     updated_at = Column(DateTime(timezone=True), default=get_utc_now, onupdate=get_utc_now)
+
+    @property
+    def needs_reindex(self):
+        return self.needs_rebuild
+
+    @needs_reindex.setter
+    def needs_reindex(self, value):
+        self.needs_rebuild = value
 
 # Documents table
 class Document(Base):

@@ -14,7 +14,7 @@ export const fetchAppConfig = async (): Promise<AppConfigResponse | null> => {
 };
 
 export const saveConfig = async (payload: AppConfigCreate) => {
-  const response = await fetch(`${API_BASE_URL}/set-config`, {
+  const response = await fetch(`${API_BASE_URL}/config/set-config`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -21,6 +21,7 @@ def upsert_config(db: Session, config_data: AppConfigCreate):
         db_config.embedding_provider = config_data.embedding_provider
         db_config.embedding_model = config_data.embedding_model
         db_config.api_key = config_data.api_key
+        db_config.needs_reindex = config_data.needs_reindex
     else:
         db_config = models.AppConfig(
             id=1,
@@ -30,6 +31,7 @@ def upsert_config(db: Session, config_data: AppConfigCreate):
             embedding_provider = config_data.embedding_provider,
             embedding_model = config_data.embedding_model,
             api_key = config_data.api_key,
+            needs_rebuild = config_data.needs_reindex,
         )
         db.add(db_config)
     

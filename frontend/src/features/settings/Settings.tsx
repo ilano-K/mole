@@ -29,16 +29,9 @@ export default function Settings() {
   // Navigation State
   const [activeTab, setActiveTab] = useState<Tab>("Library");
 
-  // User's Form State
-  // const [includeSubfolders, setIncludeSubfolders] = useState(true);
-  // const [allowedExtensions, setAllowedExtensions] = useState<string[]>([
-  //   ".pdf",
-  //   ".docx",
-  //   ".txt",
-  // ]);
-  // const [embeddingProvider, setEmbeddingProvider] = useState("default");
-  // const [embeddingModel, setEmbeddingModel] = useState("");
-  // const [apiKey, setApiKey] = useState("");
+  const [originalConfig, setOriginalConfig] = useState<AppConfigBase | null>(
+    null,
+  );
 
   const [config, setConfig] = useState<AppConfigBase>({
     target_directory: "",
@@ -47,6 +40,7 @@ export default function Settings() {
     embedding_provider: "default",
     embedding_model: "",
     api_key: "",
+    needs_reindex: false,
   });
 
   const toggleExtension = (ext: string) => {
@@ -62,6 +56,7 @@ export default function Settings() {
     try {
       const config = await fetchAppConfig();
       if (config) {
+        setOriginalConfig(config);
         setConfig(config);
       }
     } catch (error) {
@@ -74,14 +69,22 @@ export default function Settings() {
   }, []);
 
   const handleContinue = async () => {
+    const needsReindex =
+      originalConfig?.target_directory !== config.target_directory ||
+      originalConfig?.include_subfolders !== config.include_subfolders ||
+      originalConfig?.embedding_provider !== config.embedding_provider ||
+      originalConfig?.embedding_model !== config.embedding_model ||
+      JSON.stringify(originalConfig?.allowed_extensions) !==
+        JSON.stringify(config.allowed_extensions);
     try {
-      await saveConfig(config);
+      await saveConfig({ ...config, needs_reindex: needsReindex });
       showToast("Settings saved successfully.", "success");
     } catch (error) {
       console.error(error);
       showToast("Could not save settings. Please try again.", "error");
     }
   };
+
   const TABS: { name: Tab; icon: ReactNode }[] = [
     { name: "Search", icon: <Search size={16} /> },
     { name: "Embeddings", icon: <Cpu size={16} /> },
@@ -142,12 +145,12 @@ export default function Settings() {
                           className="settings-input"
                           type="text"
                           value={config.target_directory}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setConfig((prev) => ({
                               ...prev,
                               target_directory: e.target.value,
-                            }))
-                          }
+                            }));
+                          }}
                           placeholder="Select directory..."
                         />
                         <button className="btn-secondary">Browse</button>
