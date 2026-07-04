@@ -8,6 +8,7 @@ import {
   RefreshCcw,
   ShieldAlert,
 } from "lucide-react";
+import { open } from "@tauri-apps/plugin-dialog";
 import "./Settings.css";
 import { fetchAppConfig, saveConfig } from "../../api/config";
 import { AppConfigBase } from "../../types/config";
@@ -61,6 +62,25 @@ export default function Settings() {
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const selectDirectory = async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: "Select Target Directory",
+      });
+
+      if (typeof selected === "string") {
+        setConfig((prev) => ({
+          ...prev,
+          target_directory: selected,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to open directory picker:", error);
     }
   };
 
@@ -159,7 +179,12 @@ export default function Settings() {
                           }}
                           placeholder="Select directory..."
                         />
-                        <button className="btn-secondary">Browse</button>
+                        <button
+                          className="btn-secondary"
+                          onClick={selectDirectory}
+                        >
+                          Browse
+                        </button>
                       </div>
                     </div>
                   </div>
