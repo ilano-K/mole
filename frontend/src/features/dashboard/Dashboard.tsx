@@ -46,6 +46,14 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    const onConfigUpdated = () => {
+      fetchPendingFiles();
+    };
+    window.addEventListener("config-updated", onConfigUpdated);
+    return () => window.removeEventListener("config-updated", onConfigUpdated);
+  }, []);
+
+  useEffect(() => {
     if (isComplete) {
       setTimeout(() => {
         setShowSyncModal(false);

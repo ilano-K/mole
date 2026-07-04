@@ -79,6 +79,12 @@ export default function Settings() {
     try {
       await saveConfig({ ...config, needs_reindex: needsReindex });
       showToast("Settings saved successfully.", "success");
+      // notify other parts of the app (eg. Dashboard) to refetch status
+      try {
+        window.dispatchEvent(new Event("config-updated"));
+      } catch (err) {
+        // ignore in non-browser or restricted environments
+      }
     } catch (error) {
       console.error(error);
       showToast("Could not save settings. Please try again.", "error");

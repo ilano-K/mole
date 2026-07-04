@@ -34,7 +34,7 @@ export const indexFile = async (payload: IndexFileRequest) => {
 export const searchDocument = async (
   payload: SearchRequest,
 ): Promise<SearchResponse> => {
-  const response = await fetch(`${API_BASE_URL}/search`, {
+  const response = await fetch(`${API_BASE_URL}/documents/search`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
