@@ -31,6 +31,14 @@ export const indexFile = async (payload: IndexFileRequest) => {
   return response.json();
 };
 
+export const resetIndex = async () => {
+  const response = await fetch(`${API_BASE_URL}/documents/reset-index`, {
+    method: "POST",
+  });
+  if (!response.ok) {
+    throw new Error("Error reindexing files");
+  }
+};
 export const searchDocument = async (
   payload: SearchRequest,
 ): Promise<SearchResponse> => {

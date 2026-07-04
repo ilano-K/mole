@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Settings2, Sparkles } from "lucide-react";
 import "./Dashboard.css";
-import { searchDocument } from "../../api/document";
+import { resetIndex, searchDocument } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
 import { useSync } from "../../hooks/useSync";
 import { SearchResponse, SearchResult } from "../../types/document";
@@ -10,6 +10,7 @@ import SearchResultCard from "./SearchResultCard";
 import { openPath } from "@tauri-apps/plugin-opener";
 import SyncModal from "../sync/SyncModal";
 import { fetchStatus } from "../../api/status";
+import { FetchStatusResponse } from "../../types/status";
 
 export default function Dashboard() {
   const [isAgentActive, setIsAgentActive] = useState(true);
@@ -27,13 +28,17 @@ export default function Dashboard() {
   const { totalFiles, indexedFiles, currentFileName, isComplete, startSync } =
     useSync();
 
-  const fetchPendingFiles = async () => {
+  const applyStatus = (status: FetchStatusResponse) => {
+    setPendingFiles(status.pending_files);
+    setSelectedDirectory(status.target_directory);
+    setNeedsReindex(status.needs_rebuild);
+    setShowBanner(status.pending_files_count > 0 || status.needs_rebuild);
+  };
+
+  const refreshStatus = async () => {
     try {
       const status = await fetchStatus();
-      setPendingFiles(status.pending_files ?? []);
-      setSelectedDirectory(status.target_directory ?? "");
-      setNeedsReindex(status.needs_rebuild ?? false);
-      setShowBanner(status.pending_files_count > 0 || status.needs_rebuild);
+      applyStatus(status);
     } catch (error) {
       console.error(error);
     } finally {
@@ -42,12 +47,12 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchPendingFiles();
+    refreshStatus();
   }, []);
 
   useEffect(() => {
     const onConfigUpdated = () => {
-      fetchPendingFiles();
+      refreshStatus();
     };
     window.addEventListener("config-updated", onConfigUpdated);
     return () => window.removeEventListener("config-updated", onConfigUpdated);
@@ -57,7 +62,7 @@ export default function Dashboard() {
     if (isComplete) {
       setTimeout(() => {
         setShowSyncModal(false);
-        fetchPendingFiles();
+        refreshStatus();
       }, 1000);
     }
   }, [isComplete]);
@@ -79,6 +84,19 @@ export default function Dashboard() {
     }
   };
 
+  const handleSync = async () => {
+    setShowSyncModal(true);
+
+    if (needsReindex) {
+      await resetIndex();
+      const status = await fetchStatus(); // guaranteed response or throws
+      applyStatus(status);
+
+      startSync(status.pending_files);
+    } else {
+      startSync(pendingFiles);
+    }
+  };
   const displayResults = results;
 
   return (
@@ -106,13 +124,7 @@ export default function Dashboard() {
           </div>
 
           <div className="banner-right">
-            <button
-              className="btn-sync"
-              onClick={() => {
-                setShowSyncModal(true);
-                startSync(pendingFiles);
-              }}
-            >
+            <button className="btn-sync" onClick={handleSync}>
               {needsReindex ? "Reindex Now" : "Sync Now"}
             </button>
 

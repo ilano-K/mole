@@ -3,10 +3,11 @@ from app.schemas.document import (
     ScanPendingFileResponse, 
     SearchRequest, 
     SearchResponse
+    
 )
 from app.schemas.indexing import (
     IndexRequest, IndexResponse, 
-    BatchIndexRequest, BatchIndexResponse
+    BatchIndexRequest, BatchIndexResponse, ResetIndexResponse
 )
 from app.services import document_service
 from app.dependencies.db import DB
@@ -32,6 +33,6 @@ def search_document(payload: SearchRequest):
         payload.unique_results
     )
 
-@router.post('/rebuild', response_model=BatchIndexResponse)
-def rebuild_index(db: DB):
-    return document_service.rebuild_index(db)
+@router.post('/reset-index', response_model=ResetIndexResponse)
+def reset_index(db: DB):
+    return document_service.reset_index(db)

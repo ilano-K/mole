@@ -3,6 +3,10 @@ from typing import List, Optional
 from datetime import datetime 
 from app.schemas.document import DocumentBase
 
+class ResetIndexResponse(BaseModel):
+    success: bool
+    message: str
+    
 class IndexRequest(BaseModel):
     file_path: str
 

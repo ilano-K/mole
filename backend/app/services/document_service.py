@@ -2,7 +2,7 @@ from app.schemas.document import (
     DocumentCreate, ScanPendingFileResponse, 
     SearchResponse, SearchResult
 )
-from app.schemas.indexing import BatchIndexResponse
+from app.schemas.indexing import BatchIndexResponse, ResetIndexResponse
 from app.schemas.config import AppConfigCreate
 from sqlalchemy.orm import Session
 from app.core import exceptions
@@ -15,7 +15,7 @@ from app.database.models import Document
 from app.database import crud
 
 
-def rebuild_index(db: Session):
+def reset_index(db: Session):
     # reset chromadb
     chroma_service.recreate_collection()
     
@@ -23,8 +23,15 @@ def rebuild_index(db: Session):
     db.query(Document).delete()
     db.commit()
     
-    pending_files = scan_pending_files(db)
-    return process_index_batch(pending_files.files, db)
+    config = get_config(db)
+    config.needs_rebuild = False
+    db.commit()
+    db.refresh(config)
+
+    return ResetIndexResponse(
+        success=True,
+        message="Index reset successfully"
+    )
     
 def execute_indexing(file_path: str, db: Session):
     modified_timestamp = os.path.getmtime(file_path)
