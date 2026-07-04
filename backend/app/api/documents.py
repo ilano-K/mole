@@ -31,3 +31,7 @@ def search_document(payload: SearchRequest):
         payload.query, payload.n_results, 
         payload.unique_results
     )
+
+@router.post('/rebuild', response_model=BatchIndexResponse)
+def rebuild_index(db: DB):
+    return document_service.rebuild_index(db)

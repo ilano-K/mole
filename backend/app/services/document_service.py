@@ -6,17 +6,31 @@ from app.schemas.indexing import BatchIndexResponse
 from app.schemas.config import AppConfigCreate
 from sqlalchemy.orm import Session
 from app.core import exceptions
-from app.services import engine
+from app.services import chroma_service
 from app.utils import parsers
 from pathlib import Path
 import os 
+from app.database.models import Document
 
 from app.database import crud
+
+
+def rebuild_index(db: Session):
+    # reset chromadb
+    chroma_service.recreate_collection()
+    
+    # reset documents table
+    db.query(Document).delete()
+    db.commit()
+    
+    pending_files = scan_pending_files(db)
+    return process_index_batch(pending_files.files, db)
+    
 def execute_indexing(file_path: str, db: Session):
     modified_timestamp = os.path.getmtime(file_path)
 
     doc_chunks = parsers.extract_text(file_path)
-    engine.insert_chunks(file_path, doc_chunks)
+    chroma_service.insert_chunks(file_path, doc_chunks)
 
     existing_doc = crud.get_document_by_path(db, file_path)
 
@@ -111,7 +125,7 @@ def scan_pending_files(db: Session):
     )
 
 def search_documents(query: str, n_results: int = 5, unique_results: bool = False):
-    raw = engine.search_documents(query, n_results)
+    raw = chroma_service.search_documents(query, n_results)
     
     seen = set()
     results = []

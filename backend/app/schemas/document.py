@@ -24,3 +24,4 @@ class SearchResult(DocumentBase):
     
 class SearchResponse(BaseModel):
     results: list[SearchResult]
+    

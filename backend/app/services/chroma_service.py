@@ -15,6 +15,20 @@ collection = chroma_client.get_or_create_collection(
     embedding_function=embedding_fn
 )
 
+def recreate_collection():
+    global collection
+
+    try:
+        chroma_client.delete_collection("documents")
+    except Exception:
+        # Collection might not exist
+        pass
+
+    collection = chroma_client.get_or_create_collection(
+        name="documents",
+        embedding_function=embedding_fn,
+    )
+    
 def sanitize_metadata(meta: dict) -> dict:
     """
     Forces all complex Docling data into clean strings to prevent ChromaDB crashes.
