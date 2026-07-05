@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RefreshCw, Search, Settings2, Sparkles } from "lucide-react";
+import { Check, RefreshCw, Search, Settings2, Sparkles } from "lucide-react";
 import "./Dashboard.css";
 import { resetIndex, searchDocument } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
@@ -86,11 +86,17 @@ export default function Dashboard() {
   };
 
   const handleSync = async () => {
+    refreshStatus();
     setShowPreSyncModal(true);
-    setTimeout(() => {
-      setShowPreSyncModal(false);
-      setShowSyncModal(true);
-    }, 1200);
+
+    const hasPendingFiles = pendingFiles.length > 0 || needsReindex;
+
+    if (hasPendingFiles) {
+      setTimeout(() => {
+        setShowPreSyncModal(false);
+        setShowSyncModal(true);
+      }, 1200);
+    }
 
     if (needsReindex) {
       await resetIndex();
@@ -147,15 +153,38 @@ export default function Dashboard() {
       {showPreSyncModal && (
         <div className="pre-sync-modal-overlay" role="dialog" aria-modal="true">
           <div className="pre-sync-modal">
-            <div className="pre-sync-spinner" />
-            <h3>Scanning folder…</h3>
+            <button
+              type="button"
+              className="pre-sync-close"
+              onClick={() => setShowPreSyncModal(false)}
+              aria-label="Close pre-sync status"
+            >
+              ✕
+            </button>
+            {pendingFiles.length === 0 ? (
+              <div className="pre-sync-check" aria-hidden="true">
+                <Check size={24} />
+              </div>
+            ) : (
+              <div className="pre-sync-spinner" />
+            )}
+            <h3>
+              {pendingFiles.length === 0 ? "Up to date" : "Scanning folder…"}
+            </h3>
             <p>
-              Preparing your sync for{" "}
-              {selectedDirectory || "your selected folder"}
+              {pendingFiles.length === 0
+                ? "No new files need syncing right now."
+                : `Preparing your sync for ${selectedDirectory || "your selected folder"}`}
             </p>
             <div className="pre-sync-summary">
-              Found {pendingFiles.length} file
-              {pendingFiles.length === 1 ? "" : "s"} ready to sync
+              {pendingFiles.length === 0 ? (
+                <span>Everything is up to date</span>
+              ) : (
+                <span>
+                  Found {pendingFiles.length} file
+                  {pendingFiles.length === 1 ? "" : "s"} ready to sync
+                </span>
+              )}
             </div>
           </div>
         </div>
