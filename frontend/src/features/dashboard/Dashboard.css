@@ -103,6 +103,68 @@ GLASSMORPHIC BLUE SURFACES
   flex-shrink: 0;
 }
 
+.pre-sync-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+.pre-sync-modal {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.2) 0%,
+    rgba(2, 6, 23, 0.82) 100%
+  );
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  border-radius: 20px;
+  padding: 28px 32px;
+  min-width: min(360px, calc(100vw - 32px));
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  color: #f8fafc;
+}
+
+.pre-sync-spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #60a5fa;
+  animation: spin 0.9s linear infinite;
+}
+
+.pre-sync-modal h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.pre-sync-modal p {
+  margin: 0 0 12px;
+  color: rgba(248, 250, 252, 0.8);
+}
+
+.pre-sync-summary {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.16);
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  color: #bfdbfe;
+  font-size: 0.95rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .search-input-wrapper {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -214,7 +276,35 @@ input:checked + .slider:before {
   margin-left: 8px;
 }
 
-/* Settings Subtle Icon */
+/* Dashboard action buttons */
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sync-action-btn {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  color: #ffffff;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+}
+
+.sync-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
 .settings-btn-subtle {
   background: transparent;
   border: none;

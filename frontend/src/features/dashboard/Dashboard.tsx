@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Settings2, Sparkles } from "lucide-react";
+import { RefreshCw, Search, Settings2, Sparkles } from "lucide-react";
 import "./Dashboard.css";
 import { resetIndex, searchDocument } from "../../api/document";
 import LoadingScreen from "../../components/LoadingScreen";
@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [isLoadingPending, setIsLoadingPending] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [showPreSyncModal, setShowPreSyncModal] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [, setIsSearching] = useState(false);
@@ -85,7 +86,11 @@ export default function Dashboard() {
   };
 
   const handleSync = async () => {
-    setShowSyncModal(true);
+    setShowPreSyncModal(true);
+    setTimeout(() => {
+      setShowPreSyncModal(false);
+      setShowSyncModal(true);
+    }, 1200);
 
     if (needsReindex) {
       await resetIndex();
@@ -139,6 +144,23 @@ export default function Dashboard() {
         </div>
       )}
 
+      {showPreSyncModal && (
+        <div className="pre-sync-modal-overlay" role="dialog" aria-modal="true">
+          <div className="pre-sync-modal">
+            <div className="pre-sync-spinner" />
+            <h3>Scanning folder…</h3>
+            <p>
+              Preparing your sync for{" "}
+              {selectedDirectory || "your selected folder"}
+            </p>
+            <div className="pre-sync-summary">
+              Found {pendingFiles.length} file
+              {pendingFiles.length === 1 ? "" : "s"} ready to sync
+            </div>
+          </div>
+        </div>
+      )}
+
       <SyncModal
         isOpen={showSyncModal}
         onClose={() => setShowSyncModal(false)}
@@ -182,15 +204,27 @@ export default function Dashboard() {
               {isAgentActive && <span className="badge-active">Active</span>}
             </span>
           </div>
-          <button
-            type="button"
-            className="settings-btn-subtle"
-            onClick={() => navigate("/settings")}
-            title="Settings"
-            aria-label="Settings"
-          >
-            <Settings2 size={18} />
-          </button>
+          <div className="dashboard-actions">
+            <button
+              type="button"
+              className="sync-action-btn"
+              onClick={handleSync}
+              title="Sync documents"
+              aria-label="Sync documents"
+            >
+              <RefreshCw size={16} />
+              <span>Sync</span>
+            </button>
+            <button
+              type="button"
+              className="settings-btn-subtle"
+              onClick={() => navigate("/settings")}
+              title="Settings"
+              aria-label="Settings"
+            >
+              <Settings2 size={18} />
+            </button>
+          </div>
         </div>
         <span className="toggle-subtext">
           {isAgentActive
