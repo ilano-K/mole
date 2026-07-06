@@ -12,7 +12,10 @@ import SyncModal from "../sync/SyncModal";
 import { fetchStatus } from "../../api/status";
 import { FetchStatusResponse } from "../../types/status";
 
+// Dashboard is the main landing page for document sync, search, and agent modes.
+// It displays pending-file alerts, sync progress, and a hybrid search/chat interface.
 export default function Dashboard() {
+  // UI mode flags and sync state
   const [isAgentActive, setIsAgentActive] = useState(true);
   const [pendingFiles, setPendingFiles] = useState<string[]>([]);
   const [selectedDirectory, setSelectedDirectory] = useState("");
@@ -20,15 +23,20 @@ export default function Dashboard() {
   const [showBanner, setShowBanner] = useState(true);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [showPreSyncModal, setShowPreSyncModal] = useState(false);
+
+  // Search state
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [, setIsSearching] = useState(false);
+
+  // Indicates that index metadata has changed and a full rebuild is required.
   const [needsReindex, setNeedsReindex] = useState(false);
 
   const navigate = useNavigate();
   const { totalFiles, indexedFiles, currentFileName, isComplete, startSync } =
     useSync();
 
+  // Update all local status state from the backend status response.
   const applyStatus = (status: FetchStatusResponse) => {
     setPendingFiles(status.pending_files);
     setSelectedDirectory(status.target_directory);
@@ -36,6 +44,7 @@ export default function Dashboard() {
     setShowBanner(status.pending_files_count > 0 || status.needs_rebuild);
   };
 
+  // Fetch the current sync/index status from the server and apply it locally.
   const refreshStatus = async () => {
     try {
       const status = await fetchStatus();
@@ -47,10 +56,12 @@ export default function Dashboard() {
     }
   };
 
+  // Initial status load when the component mounts.
   useEffect(() => {
     refreshStatus();
   }, []);
 
+  // Re-fetch status when external config changes occur.
   useEffect(() => {
     const onConfigUpdated = () => {
       refreshStatus();
@@ -59,6 +70,7 @@ export default function Dashboard() {
     return () => window.removeEventListener("config-updated", onConfigUpdated);
   }, []);
 
+  // Close the sync modal and refresh status once the background sync completes.
   useEffect(() => {
     if (isComplete) {
       setTimeout(() => {
@@ -72,6 +84,7 @@ export default function Dashboard() {
     return <LoadingScreen message="Scanning Pending Files" />;
   }
 
+  // Run a semantic search query against the document index.
   const handleSearch = async () => {
     if (!query.trim()) return;
     try {
@@ -85,6 +98,8 @@ export default function Dashboard() {
     }
   };
 
+  // Start the sync flow. This may show a pre-sync modal and then open the
+  // full sync progress modal if there is work to do.
   const handleSync = async () => {
     refreshStatus();
     setShowPreSyncModal(true);
@@ -108,11 +123,31 @@ export default function Dashboard() {
       startSync(pendingFiles);
     }
   };
+
+  // If no pending files exist, allow the user to rebuild the index manually.
+  const handleRebuildFromModal = async () => {
+    try {
+      setShowPreSyncModal(false);
+      setShowSyncModal(true);
+
+      await resetIndex();
+      const status = await fetchStatus(); // guaranteed response or throws
+      applyStatus(status);
+
+      startSync(status.pending_files);
+    } catch (error) {
+      console.error("Rebuild failed:", error);
+      setShowSyncModal(false);
+    }
+  };
   const displayResults = results;
 
+  // Render the dashboard shell, including alerts, sync modals, search input,
+  // and either the AI agent workspace or the plain search results view.
   return (
     <div className="dashboard-container">
       {showBanner && (pendingFiles.length > 0 || needsReindex) && (
+        // Alert banner that tells the user if syncing is needed or a reindex is required.
         <div className="alert-banner">
           <div className="banner-left">
             <span className="banner-icon">{needsReindex ? "⚠️" : "📄"}</span>
@@ -150,6 +185,8 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Pre-sync modal: informs the user about folder status and exposes a rebuild
+          action when no new files are pending. */}
       {showPreSyncModal && (
         <div className="pre-sync-modal-overlay" role="dialog" aria-modal="true">
           <div className="pre-sync-modal">
@@ -186,6 +223,17 @@ export default function Dashboard() {
                 </span>
               )}
             </div>
+            {pendingFiles.length === 0 && (
+              <div className="pre-sync-actions">
+                <button
+                  type="button"
+                  className="btn-rebuild"
+                  onClick={handleRebuildFromModal}
+                >
+                  Rebuild Index
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -198,6 +246,7 @@ export default function Dashboard() {
         currentFileName={currentFileName}
       />
 
+      {/* Search card: query input, AI mode toggle, and quick sync/settings actions. */}
       <div className="search-card">
         <div className="search-input-wrapper">
           <Search size={18} className="search-icon" />
@@ -263,6 +312,7 @@ export default function Dashboard() {
       </div>
 
       {isAgentActive ? (
+        // AI mode layout: search results on the left with a contextual chat sidebar.
         <div className="bottom-split-layout">
           <div className="search-results-area-populated">
             <div className="results-header">
@@ -336,6 +386,7 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
+        // Standard search layout: a simple list of result cards for quick lookup.
         <div className="search-results-container">
           <div className="results-header">
             <span>
