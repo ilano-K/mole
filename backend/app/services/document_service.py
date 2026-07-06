@@ -37,7 +37,9 @@ def execute_indexing(file_path: str, db: Session):
     modified_timestamp = os.path.getmtime(file_path)
 
     doc_chunks = parsers.extract_text(file_path)
-    chroma_service.insert_chunks(file_path, doc_chunks)
+    
+    config = get_config(db)
+    chroma_service.insert_chunks(file_path, doc_chunks, config)
 
     existing_doc = crud.get_document_by_path(db, file_path)
 
@@ -131,8 +133,9 @@ def scan_pending_files(db: Session):
         files=pending_files
     )
 
-def search_documents(query: str, n_results: int = 5, unique_results: bool = False):
-    raw = chroma_service.search_documents(query, n_results)
+def search_documents(query: str, db: Session, n_results: int = 5, unique_results: bool = False):
+    config = get_config(db)
+    raw = chroma_service.search_documents(query, n_results, config)
     
     seen = set()
     results = []

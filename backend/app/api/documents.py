@@ -27,10 +27,11 @@ def scan_pending_files(db: DB):
     return document_service.scan_pending_files(db)
 
 @router.post('/search', response_model=SearchResponse)
-def search_document(payload: SearchRequest):
+def search_document(payload: SearchRequest, db:DB):
     return document_service.search_documents(
         payload.query, payload.n_results, 
-        payload.unique_results
+        payload.unique_results,
+        db=db
     )
 
 @router.post('/reset-index', response_model=ResetIndexResponse)

@@ -4,13 +4,14 @@ from app.services.embedding_service import get_embedding_function
 #1. initialize chroma client
 chroma_client = chromadb.PersistentClient(path='./chroma_data')
 
-#2. create or connect to the storage
-collection = chroma_client.get_or_create_collection(
-    name='documents',
-    embedding_function=get_embedding_function
-)
-
-def recreate_collection():
+#2. 
+def get_collection(config):
+    return chroma_client.get_or_create_collection(
+        name="documents",
+        embedding_function=get_embedding_function(config),
+    )
+    
+def recreate_collection(config):
     global collection
 
     try:
@@ -21,7 +22,7 @@ def recreate_collection():
 
     collection = chroma_client.get_or_create_collection(
         name="documents",
-        embedding_function=get_embedding_function,
+        embedding_function=get_embedding_function(config),
     )
     
 def sanitize_metadata(meta: dict) -> dict:
@@ -39,7 +40,8 @@ def sanitize_metadata(meta: dict) -> dict:
             clean_meta[key] = str(value)
     return clean_meta
 
-def insert_chunks(file_path: str, chunks: list[dict]):
+def insert_chunks(file_path: str, chunks: list[dict], config):
+    collection = get_collection(config)
     if not chunks:
         return 
     
@@ -63,7 +65,8 @@ def insert_chunks(file_path: str, chunks: list[dict]):
         metadatas=metadatas
     )
                
-def search_documents(query: str, n_results: int = 5) -> dict:
+def search_documents(query: str, config, n_results: int = 5) -> dict:
+    collection = get_collection(config)
     db_size = collection.count()
     if db_size == 0:
         return {"documents": [], "metadatas": [], "distances": []}
