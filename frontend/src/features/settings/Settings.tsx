@@ -11,7 +11,9 @@ import {
 import { open } from "@tauri-apps/plugin-dialog";
 import "./Settings.css";
 import { fetchAppConfig, saveConfig } from "../../api/config";
+import { fetchOllamaModels } from "../../api/ollama";
 import { AppConfigBase } from "../../types/config";
+import { OllamaModel } from "../../types/ollama";
 import { EmbeddingProvider } from "../../enums/config";
 import { useToast } from "../../components/ToastProvider";
 
@@ -44,6 +46,14 @@ export default function Settings() {
     needs_reindex: false,
   });
 
+  const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
+  const [ollamaLoading, setOllamaLoading] = useState(false);
+  const [ollamaError, setOllamaError] = useState<string>("");
+
+  const isEmbeddingModelLocked =
+    config.embedding_provider === EmbeddingProvider.DEFAULT;
+  const isApiKeyLocked = config.embedding_provider !== EmbeddingProvider.CLOUD;
+
   const toggleExtension = (ext: string) => {
     setConfig((prev) => ({
       ...prev,
@@ -53,12 +63,30 @@ export default function Settings() {
     }));
   };
 
+  const loadOllamaModels = async () => {
+    try {
+      setOllamaLoading(true);
+      setOllamaError("");
+      const response = await fetchOllamaModels();
+      setOllamaModels(response.models);
+    } catch (error) {
+      console.error("Error loading Ollama models:", error);
+      setOllamaError("Unable to load Ollama models.");
+      setOllamaModels([]);
+    } finally {
+      setOllamaLoading(false);
+    }
+  };
+
   const loadConfig = async () => {
     try {
       const config = await fetchAppConfig();
       if (config) {
         setOriginalConfig(config);
         setConfig(config);
+        if (config.embedding_provider === EmbeddingProvider.OLLAMA) {
+          await loadOllamaModels();
+        }
       }
     } catch (error) {
       console.error(error);
@@ -261,16 +289,26 @@ export default function Settings() {
                       <select
                         className="settings-select"
                         value={config.embedding_provider}
-                        onChange={(e) =>
+                        onChange={async (e) => {
+                          const provider = e.target.value as EmbeddingProvider;
                           setConfig((prev) => ({
                             ...prev,
-                            embedding_provider: e.target
-                              .value as EmbeddingProvider,
-                          }))
-                        }
+                            embedding_provider: provider,
+                            embedding_model:
+                              provider === EmbeddingProvider.DEFAULT
+                                ? ""
+                                : prev.embedding_model,
+                          }));
+
+                          if (provider === EmbeddingProvider.OLLAMA) {
+                            await loadOllamaModels();
+                          } else {
+                            setOllamaModels([]);
+                          }
+                        }}
                       >
                         <option value={EmbeddingProvider.DEFAULT}>
-                          Built-in
+                          Default
                         </option>
                         <option value={EmbeddingProvider.OLLAMA}>Ollama</option>
                         <option value={EmbeddingProvider.CLOUD}>
@@ -283,21 +321,87 @@ export default function Settings() {
                   <div className="settings-row">
                     <div className="row-info">
                       <label>Embedding Model</label>
-                      <p>The specific model name (e.g. nomic-embed-text).</p>
+                      <p>
+                        {config.embedding_provider === EmbeddingProvider.OLLAMA
+                          ? "Choose a model available from your local Ollama setup."
+                          : config.embedding_provider ===
+                              EmbeddingProvider.CLOUD
+                            ? "Enter your cloud embedding model name."
+                            : "Default mode uses the built-in model."}
+                      </p>
                     </div>
                     <div className="row-action">
-                      <input
-                        className="settings-input"
-                        type="text"
-                        value={config.embedding_model}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            embedding_model: e.target.value,
-                          }))
-                        }
-                        placeholder="all-MiniLM-L6-v2"
-                      />
+                      {config.embedding_provider ===
+                      EmbeddingProvider.OLLAMA ? (
+                        <div className="settings-select-wrapper">
+                          <div className="settings-select-group">
+                            <select
+                              className="settings-select settings-select--ollama"
+                              value={config.embedding_model}
+                              onChange={(e) =>
+                                setConfig((prev) => ({
+                                  ...prev,
+                                  embedding_model: e.target.value,
+                                }))
+                              }
+                              disabled={
+                                ollamaLoading || ollamaModels.length === 0
+                              }
+                            >
+                              <option value="" disabled>
+                                {ollamaLoading
+                                  ? "Loading Ollama models..."
+                                  : ollamaModels.length > 0
+                                    ? "Select a model"
+                                    : "No Ollama models found"}
+                              </option>
+                              {ollamaModels.length > 0
+                                ? ollamaModels.map((model) => (
+                                    <option key={model.name} value={model.name}>
+                                      {model.name}
+                                    </option>
+                                  ))
+                                : null}
+                            </select>
+                            <button
+                              type="button"
+                              className="btn-secondary btn-secondary--small"
+                              onClick={loadOllamaModels}
+                              disabled={ollamaLoading}
+                            >
+                              Refresh
+                            </button>
+                          </div>
+                          <div className="settings-help-text-container">
+                            <div className="settings-help-text">
+                              {ollamaError
+                                ? ollamaError
+                                : !ollamaLoading && ollamaModels.length === 0
+                                  ? "No Ollama models found. Confirm your local Ollama instance is running and refresh."
+                                  : ""}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <input
+                          className="settings-input"
+                          type="text"
+                          value={config.embedding_model}
+                          onChange={(e) =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              embedding_model: e.target.value,
+                            }))
+                          }
+                          placeholder={
+                            config.embedding_provider ===
+                            EmbeddingProvider.DEFAULT
+                              ? "Default model"
+                              : "all-MiniLM-L6-v2"
+                          }
+                          disabled={isEmbeddingModelLocked}
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -320,7 +424,8 @@ export default function Settings() {
                             api_key: e.target.value,
                           }))
                         }
-                        placeholder="sk-..."
+                        placeholder={isApiKeyLocked ? "Disabled" : "sk..."}
+                        disabled={isApiKeyLocked}
                       />
                     </div>
                   </div>

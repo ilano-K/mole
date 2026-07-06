@@ -16,6 +16,7 @@ from app.database import crud
 
 
 def reset_index(db: Session):
+    config = get_config(db)
     # reset chromadb
     chroma_service.recreate_collection()
     
