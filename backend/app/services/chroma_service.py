@@ -1,18 +1,13 @@
 import chromadb 
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+from app.services.embedding_service import get_embedding_function
 
 #1. initialize chroma client
 chroma_client = chromadb.PersistentClient(path='./chroma_data')
 
-#2. define embedding model
-embedding_fn = SentenceTransformerEmbeddingFunction(
-    model_name="all-MiniLM-L6-v2"
-)
-
-#3. create or connect to the storage
+#2. create or connect to the storage
 collection = chroma_client.get_or_create_collection(
     name='documents',
-    embedding_function=embedding_fn
+    embedding_function=get_embedding_function
 )
 
 def recreate_collection():
@@ -26,7 +21,7 @@ def recreate_collection():
 
     collection = chroma_client.get_or_create_collection(
         name="documents",
-        embedding_function=embedding_fn,
+        embedding_function=get_embedding_function,
     )
     
 def sanitize_metadata(meta: dict) -> dict:
