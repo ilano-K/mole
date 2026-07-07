@@ -45,6 +45,10 @@ export default function Settings() {
     api_key: "",
     needs_reindex: false,
   });
+  const [cloudProvider, setCloudProvider] = useState("OpenAI");
+
+  const CLOUD_PROVIDERS = ["OpenAI", "Jina AI", "Cohere"];
+  const OPENAI_MODELS = ["text-embedding-3-small", "text-embedding-3-large"];
 
   const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
   const [ollamaLoading, setOllamaLoading] = useState(false);
@@ -86,6 +90,13 @@ export default function Settings() {
         setConfig(config);
         if (config.embedding_provider === EmbeddingProvider.OLLAMA) {
           await loadOllamaModels();
+        }
+        if (config.embedding_provider === EmbeddingProvider.CLOUD) {
+          setCloudProvider(
+            OPENAI_MODELS.includes(config.embedding_model ?? "")
+              ? "OpenAI"
+              : "OpenAI"
+          );
         }
       }
     } catch (error) {
@@ -382,6 +393,84 @@ export default function Settings() {
                             </div>
                           </div>
                         </div>
+                      ) : config.embedding_provider === EmbeddingProvider.CLOUD ? (
+                        <>
+                          <div className="settings-row">
+                            <div className="row-info">
+                              <label>Provider</label>
+                              <p>Select the cloud API provider for embeddings.</p>
+                            </div>
+                            <div className="row-action">
+                              <select
+                                className="settings-select"
+                                value={cloudProvider}
+                                onChange={(e) => {
+                                  const provider = e.target.value;
+                                  setCloudProvider(provider);
+                                  setConfig((prev) => ({
+                                    ...prev,
+                                    embedding_model:
+                                      provider === "OpenAI"
+                                        ? OPENAI_MODELS.includes(prev.embedding_model || "")
+                                          ? prev.embedding_model
+                                          : OPENAI_MODELS[0]
+                                        : "",
+                                  }));
+                                }}
+                              >
+                                {CLOUD_PROVIDERS.map((provider) => (
+                                  <option key={provider} value={provider}>
+                                    {provider}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="settings-row">
+                            <div className="row-info">
+                              <label>Model</label>
+                              <p>
+                                {cloudProvider === "OpenAI"
+                                  ? "Choose an OpenAI embedding model."
+                                  : `Enter the ${cloudProvider} embedding model name.`}
+                              </p>
+                            </div>
+                            <div className="row-action">
+                              {cloudProvider === "OpenAI" ? (
+                                <select
+                                  className="settings-select"
+                                  value={config.embedding_model}
+                                  onChange={(e) =>
+                                    setConfig((prev) => ({
+                                      ...prev,
+                                      embedding_model: e.target.value,
+                                    }))
+                                  }
+                                >
+                                  {OPENAI_MODELS.map((model) => (
+                                    <option key={model} value={model}>
+                                      {model}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <input
+                                  className="settings-input"
+                                  type="text"
+                                  value={config.embedding_model}
+                                  onChange={(e) =>
+                                    setConfig((prev) => ({
+                                      ...prev,
+                                      embedding_model: e.target.value,
+                                    }))
+                                  }
+                                  placeholder={`Enter ${cloudProvider} model name`}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </>
                       ) : (
                         <input
                           className="settings-input"

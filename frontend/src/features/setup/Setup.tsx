@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useNavigate } from "react-router-dom";
 import DirectoryStep from "./DirectoryStep";
@@ -11,7 +11,7 @@ import { useToast } from "../../components/ToastProvider";
 import { OllamaModel } from "../../types/ollama";
 
 const FILE_TYPES = [".pdf", ".docx", ".txt"];
-const PROVIDERS = ["OpenAI", "Jina AI"];
+const PROVIDERS = ["OpenAI", "Jina AI", "Cohere"];
 
 type SetupStep = 1 | 2;
 
@@ -22,6 +22,7 @@ interface SetupState {
   engineOption: EmbeddingProvider;
   ollamaModel: string;
   cloudProvider: string;
+  cloudModel: string;
   apiKey: string;
 }
 
@@ -35,16 +36,15 @@ export default function Setup() {
     engineOption: EmbeddingProvider.DEFAULT,
     ollamaModel: "",
     cloudProvider: PROVIDERS[0],
+    cloudModel: "text-embedding-3-small",
     apiKey: "",
   });
 
   const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
   const [ollamaLoading, setOllamaLoading] = useState(false);
-  const [ollamaError, setOllamaError] = useState<string | null>(null);
   const { showToast } = useToast();
   const getOllamaModels = async () => {
     setOllamaLoading(true);
-    setOllamaError(null);
     try {
       const models = await fetchOllamaModels();
       setOllamaModels(models);
@@ -54,7 +54,6 @@ export default function Setup() {
     } catch (error: any) {
       console.error(error);
       const msg = (error && error.message) || "Failed to connect to Ollama.";
-      setOllamaError(msg);
       showToast(`Failed to connect to Ollama: ${msg}`, "error");
     } finally {
       setOllamaLoading(false);
@@ -107,7 +106,7 @@ export default function Setup() {
     if (setup.engineOption === EmbeddingProvider.OLLAMA) {
       model = setup.ollamaModel;
     } else if (setup.engineOption === EmbeddingProvider.CLOUD) {
-      model = setup.cloudProvider;
+      model = setup.cloudModel;
     }
 
     try {
@@ -176,10 +175,18 @@ export default function Setup() {
             <EngineStep
               engineOption={setup.engineOption}
               ollamaModel={setup.ollamaModel}
+              cloudModel={setup.cloudModel}
               provider={setup.cloudProvider}
               apiKey={setup.apiKey}
               onSelectEngine={async (value) => {
-                setSetup((prev) => ({ ...prev, engineOption: value }));
+                setSetup((prev) => ({
+                  ...prev,
+                  engineOption: value,
+                  cloudModel:
+                    value === EmbeddingProvider.CLOUD
+                      ? prev.cloudModel || "text-embedding-3-small"
+                      : prev.cloudModel,
+                }));
                 if (value === EmbeddingProvider.OLLAMA) {
                   await getOllamaModels();
                 }
@@ -187,8 +194,18 @@ export default function Setup() {
               onChangeOllamaModel={(value) =>
                 setSetup((prev) => ({ ...prev, ollamaModel: value }))
               }
+              onChangeCloudModel={(value) =>
+                setSetup((prev) => ({ ...prev, cloudModel: value }))
+              }
               onChangeProvider={(value) =>
-                setSetup((prev) => ({ ...prev, cloudProvider: value }))
+                setSetup((prev) => ({
+                  ...prev,
+                  cloudProvider: value,
+                  cloudModel:
+                    value === "OpenAI"
+                      ? "text-embedding-3-small"
+                      : prev.cloudModel,
+                }))
               }
               onChangeApiKey={(value) =>
                 setSetup((prev) => ({ ...prev, apiKey: value }))
@@ -210,17 +227,20 @@ export default function Setup() {
                   ? !setup.targetDir
                   : setup.engineOption === EmbeddingProvider.OLLAMA
                     ? ollamaLoading || ollamaModels.length === 0
-                    : false
+                    : setup.engineOption === EmbeddingProvider.CLOUD
+                      ? !setup.cloudModel || !setup.apiKey
+                      : false
               }
               title={
-                step === 2 &&
-                setup.engineOption === EmbeddingProvider.OLLAMA &&
-                (ollamaLoading
+              step === 2 &&
+              setup.engineOption === EmbeddingProvider.OLLAMA
+                ? ollamaLoading
                   ? "Connecting to Ollama..."
                   : ollamaModels.length === 0
-                    ? "No Ollama models available — cannot save"
-                    : "")
-              }
+                  ? "No Ollama models available — cannot save"
+                  : undefined
+                : undefined
+            }
               onClick={handleContinue}
             >
               {step === 1 ? "Continue" : "Complete Setup"}

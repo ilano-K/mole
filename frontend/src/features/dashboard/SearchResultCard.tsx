@@ -7,7 +7,6 @@ import {
   FileJson,
   Globe2,
   File,
-  ExternalLink,
   type LucideIcon,
 } from "lucide-react";
 import "./SearchResultCard.css";
