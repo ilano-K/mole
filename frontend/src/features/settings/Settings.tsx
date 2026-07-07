@@ -16,6 +16,9 @@ import { AppConfigBase } from "../../types/config";
 import { OllamaModel } from "../../types/ollama";
 import { EmbeddingProvider } from "../../enums/config";
 import { useToast } from "../../components/ToastProvider";
+import LibraryPanel from "./LibraryPanel";
+import { CLOUD_PROVIDERS } from "../../constants/embeddingProvider";
+import EmbeddingsPanel from "./EmbeddingsPanel";
 
 type Tab =
   | "Search"
@@ -29,9 +32,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  // Navigation State
   const [activeTab, setActiveTab] = useState<Tab>("Library");
-
   const [originalConfig, setOriginalConfig] = useState<AppConfigBase | null>(
     null,
   );
@@ -45,18 +46,15 @@ export default function Settings() {
     api_key: "",
     needs_reindex: false,
   });
-  const [cloudProvider, setCloudProvider] = useState("OpenAI");
 
-  const CLOUD_PROVIDERS = ["OpenAI", "Jina AI", "Cohere"];
-  const OPENAI_MODELS = ["text-embedding-3-small", "text-embedding-3-large"];
+  const providerLabels = Object.values(CLOUD_PROVIDERS).map((p) => p.label);
+  const [cloudProvider, setCloudProvider] = useState<string>(
+    providerLabels[0] ?? "OpenAI",
+  );
 
   const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
   const [ollamaLoading, setOllamaLoading] = useState(false);
   const [ollamaError, setOllamaError] = useState<string>("");
-
-  const isEmbeddingModelLocked =
-    config.embedding_provider === EmbeddingProvider.DEFAULT;
-  const isApiKeyLocked = config.embedding_provider !== EmbeddingProvider.CLOUD;
 
   const toggleExtension = (ext: string) => {
     setConfig((prev) => ({
@@ -84,19 +82,20 @@ export default function Settings() {
 
   const loadConfig = async () => {
     try {
-      const config = await fetchAppConfig();
-      if (config) {
-        setOriginalConfig(config);
-        setConfig(config);
-        if (config.embedding_provider === EmbeddingProvider.OLLAMA) {
+      const cfg = await fetchAppConfig();
+      if (cfg) {
+        setOriginalConfig(cfg);
+        setConfig(cfg);
+        if (cfg.embedding_provider === EmbeddingProvider.OLLAMA) {
           await loadOllamaModels();
         }
-        if (config.embedding_provider === EmbeddingProvider.CLOUD) {
-          setCloudProvider(
-            OPENAI_MODELS.includes(config.embedding_model ?? "")
-              ? "OpenAI"
-              : "OpenAI"
+        if (cfg.embedding_provider === EmbeddingProvider.CLOUD) {
+          const found = Object.values(CLOUD_PROVIDERS).find((p) =>
+            (p.models as readonly string[]).includes(
+              String(cfg.embedding_model ?? ""),
+            ),
           );
+          setCloudProvider(found?.label ?? providerLabels[0] ?? "OpenAI");
         }
       }
     } catch (error) {
@@ -138,11 +137,10 @@ export default function Settings() {
     try {
       await saveConfig({ ...config, needs_reindex: needsReindex });
       showToast("Settings saved successfully.", "success");
-      // notify other parts of the app (eg. Dashboard) to refetch status
       try {
         window.dispatchEvent(new Event("config-updated"));
       } catch (err) {
-        // ignore in non-browser or restricted environments
+        // ignore
       }
     } catch (error) {
       console.error(error);
@@ -162,7 +160,6 @@ export default function Settings() {
   return (
     <div className="settings-overlay">
       <div className="settings-container">
-        {/* LEFT SIDEBAR */}
         <div className="settings-sidebar">
           <div className="sidebar-header">SETTINGS</div>
           <nav className="sidebar-nav">
@@ -179,9 +176,7 @@ export default function Settings() {
           </nav>
         </div>
 
-        {/* RIGHT CONTENT AREA */}
         <div className="settings-content-wrapper">
-          {/* Header */}
           <div className="settings-content-header">
             <h2>{activeTab}</h2>
             <button
@@ -192,337 +187,29 @@ export default function Settings() {
             </button>
           </div>
 
-          {/* Scrollable Content */}
           <div className="settings-scroll-area">
-            {/* === LIBRARY TAB === */}
             {activeTab === "Library" && (
-              <>
-                <div className="settings-section-label">INDEXING</div>
-                <div className="settings-group-card">
-                  <div className="settings-row">
-                    <div className="row-info">
-                      <label>Target Directory</label>
-                      <p>The root folder Mole will scan for documents.</p>
-                    </div>
-                    <div className="row-action">
-                      <div className="input-with-button">
-                        <input
-                          className="settings-input"
-                          type="text"
-                          value={config.target_directory}
-                          onChange={(e) => {
-                            setConfig((prev) => ({
-                              ...prev,
-                              target_directory: e.target.value,
-                            }));
-                          }}
-                          placeholder="Select directory..."
-                        />
-                        <button
-                          className="btn-secondary"
-                          onClick={selectDirectory}
-                        >
-                          Browse
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="settings-row">
-                    <div className="row-info">
-                      <label>Include Subfolders</label>
-                      <p>
-                        Scan all nested folders inside the target directory.
-                      </p>
-                    </div>
-                    <div className="row-action">
-                      <label className="switch">
-                        <input
-                          type="checkbox"
-                          checked={config.include_subfolders}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              include_subfolders: e.target.checked,
-                            }))
-                          }
-                        />
-                        <span className="slider round"></span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="settings-section-label">FILE TYPES</div>
-                <div className="settings-group-card">
-                  <div
-                    className="settings-row"
-                    style={{
-                      borderBottom: "none",
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <div className="row-info" style={{ marginBottom: "12px" }}>
-                      <label>Allowed Extensions</label>
-                      <p>
-                        Only files with these extensions will be vectorized.
-                      </p>
-                    </div>
-                    <div className="settings-chip-group">
-                      {[".pdf", ".docx", ".txt", ".md", ".csv"].map((ext) => (
-                        <button
-                          key={ext}
-                          type="button"
-                          className={`settings-chip ${config.allowed_extensions.includes(ext) ? "selected" : ""}`}
-                          onClick={() => toggleExtension(ext)}
-                        >
-                          {ext}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </>
+              <LibraryPanel
+                config={config}
+                setConfig={setConfig}
+                selectDirectory={selectDirectory}
+                toggleExtension={toggleExtension}
+              />
             )}
 
-            {/* === EMBEDDINGS TAB === */}
             {activeTab === "Embeddings" && (
-              <>
-                <div className="settings-section-label">VECTOR ENGINE</div>
-                <div className="settings-group-card">
-                  <div className="settings-row">
-                    <div className="row-info">
-                      <label>Embedding Provider</label>
-                      <p>Choose the engine used to vectorize your documents.</p>
-                    </div>
-                    <div className="row-action">
-                      <select
-                        className="settings-select"
-                        value={config.embedding_provider}
-                        onChange={async (e) => {
-                          const provider = e.target.value as EmbeddingProvider;
-                          setConfig((prev) => ({
-                            ...prev,
-                            embedding_provider: provider,
-                            embedding_model:
-                              provider === EmbeddingProvider.DEFAULT
-                                ? ""
-                                : prev.embedding_model,
-                          }));
-
-                          if (provider === EmbeddingProvider.OLLAMA) {
-                            await loadOllamaModels();
-                          } else {
-                            setOllamaModels([]);
-                          }
-                        }}
-                      >
-                        <option value={EmbeddingProvider.DEFAULT}>
-                          Default
-                        </option>
-                        <option value={EmbeddingProvider.OLLAMA}>Ollama</option>
-                        <option value={EmbeddingProvider.CLOUD}>
-                          Cloud API
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="settings-row">
-                    <div className="row-info">
-                      <label>Embedding Model</label>
-                      <p>
-                        {config.embedding_provider === EmbeddingProvider.OLLAMA
-                          ? "Choose a model available from your local Ollama setup."
-                          : config.embedding_provider ===
-                              EmbeddingProvider.CLOUD
-                            ? "Enter your cloud embedding model name."
-                            : "Default mode uses the built-in model."}
-                      </p>
-                    </div>
-                    <div className="row-action">
-                      {config.embedding_provider ===
-                      EmbeddingProvider.OLLAMA ? (
-                        <div className="settings-select-wrapper">
-                          <div className="settings-select-group">
-                            <select
-                              className="settings-select settings-select--ollama"
-                              value={config.embedding_model}
-                              onChange={(e) =>
-                                setConfig((prev) => ({
-                                  ...prev,
-                                  embedding_model: e.target.value,
-                                }))
-                              }
-                              disabled={
-                                ollamaLoading || ollamaModels.length === 0
-                              }
-                            >
-                              <option value="" disabled>
-                                {ollamaLoading
-                                  ? "Loading Ollama models..."
-                                  : ollamaModels.length > 0
-                                    ? "Select a model"
-                                    : "No Ollama models found"}
-                              </option>
-                              {ollamaModels.length > 0
-                                ? ollamaModels.map((model) => (
-                                    <option key={model.name} value={model.name}>
-                                      {model.name}
-                                    </option>
-                                  ))
-                                : null}
-                            </select>
-                            <button
-                              type="button"
-                              className="btn-secondary btn-secondary--small"
-                              onClick={loadOllamaModels}
-                              disabled={ollamaLoading}
-                            >
-                              Refresh
-                            </button>
-                          </div>
-                          <div className="settings-help-text-container">
-                            <div className="settings-help-text">
-                              {ollamaError
-                                ? ollamaError
-                                : !ollamaLoading && ollamaModels.length === 0
-                                  ? "No Ollama models found. Confirm your local Ollama instance is running and refresh."
-                                  : ""}
-                            </div>
-                          </div>
-                        </div>
-                      ) : config.embedding_provider === EmbeddingProvider.CLOUD ? (
-                        <>
-                          <div className="settings-row">
-                            <div className="row-info">
-                              <label>Provider</label>
-                              <p>Select the cloud API provider for embeddings.</p>
-                            </div>
-                            <div className="row-action">
-                              <select
-                                className="settings-select"
-                                value={cloudProvider}
-                                onChange={(e) => {
-                                  const provider = e.target.value;
-                                  setCloudProvider(provider);
-                                  setConfig((prev) => ({
-                                    ...prev,
-                                    embedding_model:
-                                      provider === "OpenAI"
-                                        ? OPENAI_MODELS.includes(prev.embedding_model || "")
-                                          ? prev.embedding_model
-                                          : OPENAI_MODELS[0]
-                                        : "",
-                                  }));
-                                }}
-                              >
-                                {CLOUD_PROVIDERS.map((provider) => (
-                                  <option key={provider} value={provider}>
-                                    {provider}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="settings-row">
-                            <div className="row-info">
-                              <label>Model</label>
-                              <p>
-                                {cloudProvider === "OpenAI"
-                                  ? "Choose an OpenAI embedding model."
-                                  : `Enter the ${cloudProvider} embedding model name.`}
-                              </p>
-                            </div>
-                            <div className="row-action">
-                              {cloudProvider === "OpenAI" ? (
-                                <select
-                                  className="settings-select"
-                                  value={config.embedding_model}
-                                  onChange={(e) =>
-                                    setConfig((prev) => ({
-                                      ...prev,
-                                      embedding_model: e.target.value,
-                                    }))
-                                  }
-                                >
-                                  {OPENAI_MODELS.map((model) => (
-                                    <option key={model} value={model}>
-                                      {model}
-                                    </option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <input
-                                  className="settings-input"
-                                  type="text"
-                                  value={config.embedding_model}
-                                  onChange={(e) =>
-                                    setConfig((prev) => ({
-                                      ...prev,
-                                      embedding_model: e.target.value,
-                                    }))
-                                  }
-                                  placeholder={`Enter ${cloudProvider} model name`}
-                                />
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <input
-                          className="settings-input"
-                          type="text"
-                          value={config.embedding_model}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              embedding_model: e.target.value,
-                            }))
-                          }
-                          placeholder={
-                            config.embedding_provider ===
-                            EmbeddingProvider.DEFAULT
-                              ? "Default model"
-                              : "all-MiniLM-L6-v2"
-                          }
-                          disabled={isEmbeddingModelLocked}
-                        />
-                      )}
-                    </div>
-                  </div>
-
-                  <div
-                    className="settings-row"
-                    style={{ borderBottom: "none" }}
-                  >
-                    <div className="row-info">
-                      <label>API Key</label>
-                      <p>Required only if using a Cloud provider.</p>
-                    </div>
-                    <div className="row-action">
-                      <input
-                        className="settings-input"
-                        type="password"
-                        value={config.api_key}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            api_key: e.target.value,
-                          }))
-                        }
-                        placeholder={isApiKeyLocked ? "Disabled" : "sk..."}
-                        disabled={isApiKeyLocked}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </>
+              <EmbeddingsPanel
+                config={config}
+                setConfig={setConfig}
+                cloudProvider={cloudProvider}
+                setCloudProvider={setCloudProvider}
+                ollamaModels={ollamaModels}
+                ollamaLoading={ollamaLoading}
+                ollamaError={ollamaError}
+                loadOllamaModels={loadOllamaModels}
+              />
             )}
 
-            {/* Placeholder for other tabs */}
             {!["Library", "Embeddings"].includes(activeTab) && (
               <div className="empty-tab-state">
                 <p>Settings for {activeTab} will appear here.</p>
@@ -530,7 +217,6 @@ export default function Settings() {
             )}
           </div>
 
-          {/* Footer Actions */}
           <div className="settings-footer">
             <button
               className="btn-secondary"

@@ -9,9 +9,10 @@ import { EmbeddingProvider } from "../../enums/config";
 import { fetchOllamaModels } from "../../api/ollama";
 import { useToast } from "../../components/ToastProvider";
 import { OllamaModel } from "../../types/ollama";
+import { CLOUD_PROVIDERS } from "../../constants/embeddingProvider";
 
 const FILE_TYPES = [".pdf", ".docx", ".txt"];
-const PROVIDERS = ["OpenAI", "Jina AI", "Cohere"];
+const PROVIDERS = Object.values(CLOUD_PROVIDERS).map((p) => p.label);
 
 type SetupStep = 1 | 2;
 
@@ -35,7 +36,7 @@ export default function Setup() {
     fileTypes: FILE_TYPES,
     engineOption: EmbeddingProvider.DEFAULT,
     ollamaModel: "",
-    cloudProvider: PROVIDERS[0],
+    cloudProvider: PROVIDERS[0] ?? Object.values(CLOUD_PROVIDERS)[0].label,
     cloudModel: "text-embedding-3-small",
     apiKey: "",
   });
@@ -232,15 +233,14 @@ export default function Setup() {
                       : false
               }
               title={
-              step === 2 &&
-              setup.engineOption === EmbeddingProvider.OLLAMA
-                ? ollamaLoading
-                  ? "Connecting to Ollama..."
-                  : ollamaModels.length === 0
-                  ? "No Ollama models available — cannot save"
+                step === 2 && setup.engineOption === EmbeddingProvider.OLLAMA
+                  ? ollamaLoading
+                    ? "Connecting to Ollama..."
+                    : ollamaModels.length === 0
+                      ? "No Ollama models available — cannot save"
+                      : undefined
                   : undefined
-                : undefined
-            }
+              }
               onClick={handleContinue}
             >
               {step === 1 ? "Continue" : "Complete Setup"}

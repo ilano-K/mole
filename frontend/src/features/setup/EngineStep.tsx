@@ -1,5 +1,6 @@
 import { EmbeddingProvider } from "../../enums/config";
 import { OllamaModel } from "../../types/ollama";
+import { CLOUD_PROVIDERS } from "../../constants/embeddingProvider";
 
 interface EngineStepProps {
   engineOption: EmbeddingProvider;
@@ -17,8 +18,7 @@ interface EngineStepProps {
   onRequestModels?: () => void;
 }
 
-const CLOUD_PROVIDERS = ["OpenAI", "Jina AI", "Cohere"];
-const OPENAI_MODELS = ["text-embedding-3-small", "text-embedding-3-large"];
+const providerLabels = Object.values(CLOUD_PROVIDERS).map((p) => p.label);
 
 export default function EngineStep({
   engineOption,
@@ -136,7 +136,7 @@ export default function EngineStep({
             value={provider}
             onChange={(e) => onChangeProvider(e.target.value)}
           >
-            {CLOUD_PROVIDERS.map((option) => (
+            {providerLabels.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
@@ -146,33 +146,39 @@ export default function EngineStep({
           <label className="engine-field-label" htmlFor="cloud-model">
             Model
           </label>
-          {provider === "OpenAI" ? (
-            <select
-              id="cloud-model"
-              className="engine-select"
-              value={cloudModel}
-              onChange={(e) => onChangeCloudModel(e.target.value)}
-            >
-              {OPENAI_MODELS.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              id="cloud-model"
-              className="engine-input"
-              type="text"
-              value={cloudModel}
-              onChange={(e) => onChangeCloudModel(e.target.value)}
-              placeholder={
-                provider === "Jina AI"
-                  ? "Enter your Jina AI model name"
-                  : "Enter your Cohere model name"
-              }
-            />
-          )}
+          {(() => {
+            const entry = Object.values(CLOUD_PROVIDERS).find(
+              (p) => p.label === provider,
+            );
+            const models = entry?.models ?? [];
+            if (models.length > 0) {
+              return (
+                <select
+                  id="cloud-model"
+                  className="engine-select"
+                  value={cloudModel}
+                  onChange={(e) => onChangeCloudModel(e.target.value)}
+                >
+                  {models.map((model) => (
+                    <option key={model} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
+              );
+            }
+
+            return (
+              <input
+                id="cloud-model"
+                className="engine-input"
+                type="text"
+                value={cloudModel}
+                onChange={(e) => onChangeCloudModel(e.target.value)}
+                placeholder={`Enter your ${provider} model name`}
+              />
+            );
+          })()}
 
           <label className="engine-field-label" htmlFor="api-key">
             API Key
