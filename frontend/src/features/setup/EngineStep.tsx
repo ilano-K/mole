@@ -78,22 +78,45 @@ export default function EngineStep({
           </p>
         </button>
 
-        {Object.entries(CLOUD_PROVIDERS).map(([key, provider]) => (
-          <button
-            key={key}
-            type="button"
-            className={`engine-option-card ${engineOption === (key as EmbeddingProvider) ? "selected" : ""}`}
-            onClick={() => onSelectEngine(key as EmbeddingProvider)}
+        <div
+          className={`engine-option-card ${isCloudEmbeddingProvider(engineOption) ? "selected" : ""}`}
+        >
+          <div
+            className="engine-option-top"
+            onClick={() => {
+              if (!isCloudEmbeddingProvider(engineOption)) {
+                const firstKey = Object.keys(CLOUD_PROVIDERS)[0];
+                onSelectEngine(firstKey as EmbeddingProvider);
+              }
+            }}
+            style={{ cursor: "pointer" }}
           >
-            <div className="engine-option-top">
-              <h3 className="engine-option-title">{provider.label}</h3>
+            <h3 className="engine-option-title">Cloud Provider</h3>
+            {isCloudEmbeddingProvider(engineOption) && (
+              <span className="engine-badge">
+                {getProviderLabel(engineOption)}
+              </span>
+            )}
+          </div>
+          <p className="engine-option-subtext">
+            Use a cloud provider for high-quality embeddings. Requires an API
+            key.
+          </p>
+          {isCloudEmbeddingProvider(engineOption) && (
+            <div className="cloud-provider-pills">
+              {Object.entries(CLOUD_PROVIDERS).map(([key, provider]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`cloud-provider-pill ${engineOption === (key as EmbeddingProvider) ? "active" : ""}`}
+                  onClick={() => onSelectEngine(key as EmbeddingProvider)}
+                >
+                  {provider.label}
+                </button>
+              ))}
             </div>
-            <p className="engine-option-subtext">
-              Use {provider.label} for high-quality embeddings. Requires an API
-              key.
-            </p>
-          </button>
-        ))}
+          )}
+        </div>
       </div>
 
       {engineOption === EmbeddingProvider.OLLAMA && (

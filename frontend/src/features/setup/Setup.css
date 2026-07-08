@@ -163,6 +163,34 @@
   margin: 8px 0 0;
 }
 
+.cloud-provider-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.cloud-provider-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cloud-provider-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.cloud-provider-pill.active {
+  background: rgba(96, 165, 250, 0.18);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #8ec5ff;
+}
+
 .engine-badge {
   background-color: rgba(96, 165, 250, 0.16);
   color: #8ec5ff;
@@ -406,6 +434,11 @@ input:checked + .slider:before {
   z-index: 1000;
   padding: 20px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.setup-modal-overlay::-webkit-scrollbar {
+  display: none;
 }
 
 .setup-modal {
