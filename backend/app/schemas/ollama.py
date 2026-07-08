@@ -5,4 +5,4 @@ class OllamaModel(BaseModel):
     name: str
 
 class OllamaModelsResponse(BaseModel):
-    models: list[OllamaModel]
+    models: List[OllamaModel]

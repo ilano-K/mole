@@ -46,11 +46,13 @@ export default function Setup() {
   const getOllamaModels = async () => {
     setOllamaLoading(true);
     try {
-      const models = await fetchOllamaModels();
+      const ollamaModels = await fetchOllamaModels();
+      const models = ollamaModels.models;
       setOllamaModels(models);
       if (!models || models.length === 0) {
         showToast("No Ollama models found.", "info");
       }
+      console.log(models);
     } catch (error: any) {
       console.error(error);
       const msg = (error && error.message) || "Failed to connect to Ollama.";

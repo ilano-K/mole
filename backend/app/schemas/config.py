@@ -2,7 +2,6 @@ from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 from app.enums.embedding import EmbeddingProvider
-
 from app.enums.file_extension import FileExtensions
 
 class AppConfigBase(BaseModel):

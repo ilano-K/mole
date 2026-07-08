@@ -4,6 +4,9 @@ from chromadb.utils.embedding_functions import (
     SentenceTransformerEmbeddingFunction, OpenAIEmbeddingFunction,
     OllamaEmbeddingFunction, CohereEmbeddingFunction, VoyageAIEmbeddingFunction, JinaEmbeddingFunction
 )
+import logging 
+
+logger = logging.getLogger(__name__)
 
 _cached_embedding = None 
 _cached_config = None 
@@ -31,6 +34,7 @@ def create_embedding(config: AppConfig):
     embedding_model = config.embedding_model
     api_key = config.api_key
     
+    logger.info(f"Embedding model: {embedding_model}")
     # === LOCAL ===
     if config.embedding_provider == EmbeddingProvider.OLLAMA:
         return OllamaEmbeddingFunction(model_name=embedding_model)

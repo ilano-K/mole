@@ -25,7 +25,7 @@ def get_ollama_models():
         base_name = name.split(":")[0]
         
         if base_name in OLLAMA_MODELS:
-            valid_embedding_models.append(name)
+            valid_embedding_models.append({"name": name})
         
     return OllamaModelsResponse(models=valid_embedding_models)
         

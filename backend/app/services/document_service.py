@@ -3,10 +3,10 @@ from app.schemas.document import (
     SearchResponse, SearchResult
 )
 from app.schemas.indexing import BatchIndexResponse, ResetIndexResponse
-from app.schemas.config import AppConfigCreate
 from sqlalchemy.orm import Session
 from app.core import exceptions
 from app.services import chroma_service
+from app.services.config_service import get_config
 from app.utils import parsers
 from pathlib import Path
 import os 
@@ -18,7 +18,7 @@ from app.database import crud
 def reset_index(db: Session):
     config = get_config(db)
     # reset chromadb
-    chroma_service.recreate_collection()
+    chroma_service.recreate_collection(config)
     
     # reset documents table
     db.query(Document).delete()
@@ -136,7 +136,7 @@ def scan_pending_files(db: Session):
 
 def search_documents(query: str, db: Session, n_results: int = 5, unique_results: bool = False):
     config = get_config(db)
-    raw = chroma_service.search_documents(query, n_results, config)
+    raw = chroma_service.search_documents(query, config, n_results)
     
     seen = set()
     results = []
@@ -164,17 +164,3 @@ def search_documents(query: str, db: Session, n_results: int = 5, unique_results
     return SearchResponse(results=results)
     
 
-def save_config(payload: AppConfigCreate, db: Session):
-    dir_path = Path(payload.target_directory)
-    
-    if not dir_path.exists():
-        raise exceptions.DocumentFileNotFoundError()
-    
-    return crud.upsert_config(db, payload)
-
-def get_config(db: Session):
-    config = crud.get_config(db)
-    
-    if not config:
-        raise exceptions.ConfigNotFoundError()
-    return config 
