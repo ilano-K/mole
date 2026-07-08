@@ -14,10 +14,12 @@ import { fetchAppConfig, saveConfig } from "../../api/config";
 import { fetchOllamaModels } from "../../api/ollama";
 import { AppConfigBase } from "../../types/config";
 import { OllamaModel } from "../../types/ollama";
-import { EmbeddingProvider } from "../../enums/config";
+import {
+  EmbeddingProvider,
+  isCloudEmbeddingProvider,
+} from "../../enums/config";
 import { useToast } from "../../components/ToastProvider";
 import LibraryPanel from "./LibraryPanel";
-import { CLOUD_PROVIDERS } from "../../constants/embeddingProvider";
 import EmbeddingsPanel from "./EmbeddingsPanel";
 
 type Tab =
@@ -46,11 +48,6 @@ export default function Settings() {
     api_key: "",
     needs_reindex: false,
   });
-
-  const providerLabels = Object.values(CLOUD_PROVIDERS).map((p) => p.label);
-  const [cloudProvider, setCloudProvider] = useState<string>(
-    providerLabels[0] ?? "OpenAI",
-  );
 
   const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
   const [ollamaLoading, setOllamaLoading] = useState(false);
@@ -89,13 +86,8 @@ export default function Settings() {
         if (cfg.embedding_provider === EmbeddingProvider.OLLAMA) {
           await loadOllamaModels();
         }
-        if (cfg.embedding_provider === EmbeddingProvider.CLOUD) {
-          const found = Object.values(CLOUD_PROVIDERS).find((p) =>
-            (p.models as readonly string[]).includes(
-              String(cfg.embedding_model ?? ""),
-            ),
-          );
-          setCloudProvider(found?.label ?? providerLabels[0] ?? "OpenAI");
+        if (isCloudEmbeddingProvider(cfg.embedding_provider)) {
+          // Provider is already set in config
         }
       }
     } catch (error) {
@@ -201,8 +193,6 @@ export default function Settings() {
               <EmbeddingsPanel
                 config={config}
                 setConfig={setConfig}
-                cloudProvider={cloudProvider}
-                setCloudProvider={setCloudProvider}
                 ollamaModels={ollamaModels}
                 ollamaLoading={ollamaLoading}
                 ollamaError={ollamaError}

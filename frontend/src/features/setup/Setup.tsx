@@ -5,14 +5,15 @@ import DirectoryStep from "./DirectoryStep";
 import EngineStep from "./EngineStep";
 import "./Setup.css";
 import { saveConfig } from "../../api/config";
-import { EmbeddingProvider } from "../../enums/config";
+import {
+  EmbeddingProvider,
+  isCloudEmbeddingProvider,
+} from "../../enums/config";
 import { fetchOllamaModels } from "../../api/ollama";
-import { useToast } from "../../components/ToastProvider";
 import { OllamaModel } from "../../types/ollama";
-import { CLOUD_PROVIDERS } from "../../constants/embeddingProvider";
+import { useToast } from "../../components/ToastProvider";
 
 const FILE_TYPES = [".pdf", ".docx", ".txt"];
-const PROVIDERS = Object.values(CLOUD_PROVIDERS).map((p) => p.label);
 
 type SetupStep = 1 | 2;
 
@@ -22,7 +23,6 @@ interface SetupState {
   fileTypes: string[];
   engineOption: EmbeddingProvider;
   ollamaModel: string;
-  cloudProvider: string;
   cloudModel: string;
   apiKey: string;
 }
@@ -36,7 +36,6 @@ export default function Setup() {
     fileTypes: FILE_TYPES,
     engineOption: EmbeddingProvider.DEFAULT,
     ollamaModel: "",
-    cloudProvider: PROVIDERS[0] ?? Object.values(CLOUD_PROVIDERS)[0].label,
     cloudModel: "text-embedding-3-small",
     apiKey: "",
   });
@@ -106,7 +105,7 @@ export default function Setup() {
     let model = "all-MiniLM-L6-v2";
     if (setup.engineOption === EmbeddingProvider.OLLAMA) {
       model = setup.ollamaModel;
-    } else if (setup.engineOption === EmbeddingProvider.CLOUD) {
+    } else if (isCloudEmbeddingProvider(setup.engineOption)) {
       model = setup.cloudModel;
     }
 
@@ -177,16 +176,14 @@ export default function Setup() {
               engineOption={setup.engineOption}
               ollamaModel={setup.ollamaModel}
               cloudModel={setup.cloudModel}
-              provider={setup.cloudProvider}
               apiKey={setup.apiKey}
               onSelectEngine={async (value) => {
                 setSetup((prev) => ({
                   ...prev,
                   engineOption: value,
-                  cloudModel:
-                    value === EmbeddingProvider.CLOUD
-                      ? prev.cloudModel || "text-embedding-3-small"
-                      : prev.cloudModel,
+                  cloudModel: isCloudEmbeddingProvider(value)
+                    ? prev.cloudModel || "text-embedding-3-small"
+                    : prev.cloudModel,
                 }));
                 if (value === EmbeddingProvider.OLLAMA) {
                   await getOllamaModels();
@@ -197,16 +194,6 @@ export default function Setup() {
               }
               onChangeCloudModel={(value) =>
                 setSetup((prev) => ({ ...prev, cloudModel: value }))
-              }
-              onChangeProvider={(value) =>
-                setSetup((prev) => ({
-                  ...prev,
-                  cloudProvider: value,
-                  cloudModel:
-                    value === "OpenAI"
-                      ? "text-embedding-3-small"
-                      : prev.cloudModel,
-                }))
               }
               onChangeApiKey={(value) =>
                 setSetup((prev) => ({ ...prev, apiKey: value }))
@@ -228,7 +215,7 @@ export default function Setup() {
                   ? !setup.targetDir
                   : setup.engineOption === EmbeddingProvider.OLLAMA
                     ? ollamaLoading || ollamaModels.length === 0
-                    : setup.engineOption === EmbeddingProvider.CLOUD
+                    : isCloudEmbeddingProvider(setup.engineOption)
                       ? !setup.cloudModel || !setup.apiKey
                       : false
               }

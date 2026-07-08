@@ -1,14 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from app.schemas.ollama import OllamaModelsResponse
+from app.constants.embedding_models import OLLAMA_MODELS
 import requests
 
-EMBEDDING_MODELS = {
-    "nomic-embed-text",
-    "mxbai-embed-large",
-    "bge-m3",
-    "snowflake-arctic-embed2",
-    "granite-embedding",
-}
 
 router = APIRouter(prefix="/ollama", tags=['ollama'])
 
@@ -30,7 +24,7 @@ def get_ollama_models():
         name = model["name"]
         base_name = name.split(":")[0]
         
-        if base_name in EMBEDDING_MODELS:
+        if base_name in OLLAMA_MODELS:
             valid_embedding_models.append(name)
         
     return OllamaModelsResponse(models=valid_embedding_models)

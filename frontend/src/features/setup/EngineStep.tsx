@@ -1,4 +1,7 @@
-import { EmbeddingProvider } from "../../enums/config";
+import {
+  EmbeddingProvider,
+  isCloudEmbeddingProvider,
+} from "../../enums/config";
 import { OllamaModel } from "../../types/ollama";
 import { CLOUD_PROVIDERS } from "../../constants/embeddingProvider";
 
@@ -6,30 +9,38 @@ interface EngineStepProps {
   engineOption: EmbeddingProvider;
   ollamaModel: string;
   cloudModel: string;
-  provider: string;
   apiKey: string;
   onSelectEngine: (option: EmbeddingProvider) => void;
   onChangeOllamaModel: (model: string) => void;
   onChangeCloudModel: (model: string) => void;
-  onChangeProvider: (provider: string) => void;
   onChangeApiKey: (key: string) => void;
   availableOllamaModels: OllamaModel[];
   ollamaLoading?: boolean;
   onRequestModels?: () => void;
 }
 
-const providerLabels = Object.values(CLOUD_PROVIDERS).map((p) => p.label);
+const getProviderLabel = (provider: EmbeddingProvider): string => {
+  const entry = Object.entries(CLOUD_PROVIDERS).find(
+    ([key]) => key === provider,
+  );
+  return entry?.[1].label ?? "";
+};
+
+const getProviderModels = (provider: EmbeddingProvider): readonly string[] => {
+  const entry = Object.entries(CLOUD_PROVIDERS).find(
+    ([key]) => key === provider,
+  );
+  return entry?.[1].models ?? [];
+};
 
 export default function EngineStep({
   engineOption,
   ollamaModel,
   cloudModel,
-  provider,
   apiKey,
   onSelectEngine,
   onChangeOllamaModel,
   onChangeCloudModel,
-  onChangeProvider,
   onChangeApiKey,
   availableOllamaModels,
   ollamaLoading = false,
@@ -67,19 +78,22 @@ export default function EngineStep({
           </p>
         </button>
 
-        <button
-          type="button"
-          className={`engine-option-card ${engineOption === EmbeddingProvider.CLOUD ? "selected" : ""}`}
-          onClick={() => onSelectEngine(EmbeddingProvider.CLOUD)}
-        >
-          <div className="engine-option-top">
-            <h3 className="engine-option-title">Cloud API</h3>
-          </div>
-          <p className="engine-option-subtext">
-            Use powerful cloud models. Requires an active internet connection
-            and API key.
-          </p>
-        </button>
+        {Object.entries(CLOUD_PROVIDERS).map(([key, provider]) => (
+          <button
+            key={key}
+            type="button"
+            className={`engine-option-card ${engineOption === (key as EmbeddingProvider) ? "selected" : ""}`}
+            onClick={() => onSelectEngine(key as EmbeddingProvider)}
+          >
+            <div className="engine-option-top">
+              <h3 className="engine-option-title">{provider.label}</h3>
+            </div>
+            <p className="engine-option-subtext">
+              Use {provider.label} for high-quality embeddings. Requires an API
+              key.
+            </p>
+          </button>
+        ))}
       </div>
 
       {engineOption === EmbeddingProvider.OLLAMA && (
@@ -125,32 +139,13 @@ export default function EngineStep({
         </div>
       )}
 
-      {engineOption === EmbeddingProvider.CLOUD && (
+      {isCloudEmbeddingProvider(engineOption) && (
         <div className="engine-form-section">
-          <label className="engine-field-label" htmlFor="provider">
-            Provider
-          </label>
-          <select
-            id="provider"
-            className="engine-select"
-            value={provider}
-            onChange={(e) => onChangeProvider(e.target.value)}
-          >
-            {providerLabels.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-
           <label className="engine-field-label" htmlFor="cloud-model">
             Model
           </label>
           {(() => {
-            const entry = Object.values(CLOUD_PROVIDERS).find(
-              (p) => p.label === provider,
-            );
-            const models = entry?.models ?? [];
+            const models = getProviderModels(engineOption);
             if (models.length > 0) {
               return (
                 <select
@@ -175,7 +170,7 @@ export default function EngineStep({
                 type="text"
                 value={cloudModel}
                 onChange={(e) => onChangeCloudModel(e.target.value)}
-                placeholder={`Enter your ${provider} model name`}
+                placeholder={`Enter your ${getProviderLabel(engineOption)} model name`}
               />
             );
           })()}
