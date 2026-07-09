@@ -375,13 +375,14 @@ export default function Dashboard() {
                 anything about them. I can also search your file index for you.
               </div>
             </div>
-            <div className="chat-input-area">
+            <div className="chat-input-area disabled">
               <input
                 type="text"
                 className="chat-input"
-                placeholder="Ask about your files or type 'search ...'"
+                placeholder="Coming soon!"
+                disabled
               />
-              <button className="btn-send">➤</button>
+              <button className="btn-send" disabled>➤</button>
             </div>
           </div>
         </div>

@@ -550,6 +550,11 @@ BOTTOM SPLIT LAYOUT & CHAT
     inset 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
+.chat-input-area.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .btn-send {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
