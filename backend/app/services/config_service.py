@@ -24,12 +24,13 @@ def save_config(payload: AppConfigCreate, db: Session):
 def get_config(db: Session):
     config = crud.get_config(db)
     
+    if not config:
+        raise exceptions.ConfigNotFoundError()
+    
     logger.info("Config:")
     logger.info("Provider: %s", config.embedding_provider)
     logger.info("Model: %s", config.embedding_model)
     logger.info("API Key: %s", config.api_key)
     logger.info("Target Directory: %s", config.target_directory)
     
-    if not config:
-        raise exceptions.ConfigNotFoundError()
     return config 
