@@ -267,6 +267,16 @@
   border-color: rgba(96, 165, 250, 0.7);
 }
 
+.engine-select option {
+  background: #1a1f2e;
+  color: #e2e8f0;
+}
+
+.engine-select option:checked {
+  background: rgba(96, 165, 250, 0.25);
+  color: #ffffff;
+}
+
 /* Big Directory Button */
 .directory-selector {
   background-color: var(--bg-element);

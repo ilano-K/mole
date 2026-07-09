@@ -29,8 +29,7 @@ export default function EmbeddingsPanel({
     setConfig((prev) => ({
       ...prev,
       embedding_provider: provider,
-      embedding_model:
-        provider === EmbeddingProvider.DEFAULT ? "" : prev.embedding_model,
+      embedding_model: "",
     }));
 
     if (provider === EmbeddingProvider.OLLAMA) {

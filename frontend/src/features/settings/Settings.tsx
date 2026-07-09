@@ -1,13 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Search,
-  Cpu,
-  Sparkles,
-  Folder,
-  RefreshCcw,
-  ShieldAlert,
-} from "lucide-react";
+import { Cpu, Folder } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import "./Settings.css";
 import { fetchAppConfig, saveConfig } from "../../api/config";
@@ -22,13 +15,7 @@ import { useToast } from "../../components/ToastProvider";
 import LibraryPanel from "./LibraryPanel";
 import EmbeddingsPanel from "./EmbeddingsPanel";
 
-type Tab =
-  | "Search"
-  | "Embeddings"
-  | "AI Agent"
-  | "Library"
-  | "Sync"
-  | "Privacy";
+type Tab = "Embeddings" | "Library";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -119,6 +106,28 @@ export default function Settings() {
   }, []);
 
   const handleContinue = async () => {
+    if (
+      isCloudEmbeddingProvider(config.embedding_provider) &&
+      !config.api_key?.trim()
+    ) {
+      showToast(
+        "An API key is required for the selected cloud embedding provider.",
+        "error",
+      );
+      return;
+    }
+
+    if (
+      config.embedding_provider === EmbeddingProvider.OLLAMA &&
+      !config.embedding_model
+    ) {
+      showToast(
+        "Please select an Ollama embedding model before saving.",
+        "error",
+      );
+      return;
+    }
+
     const needsReindex =
       originalConfig?.target_directory !== config.target_directory ||
       originalConfig?.include_subfolders !== config.include_subfolders ||
@@ -141,12 +150,8 @@ export default function Settings() {
   };
 
   const TABS: { name: Tab; icon: ReactNode }[] = [
-    { name: "Search", icon: <Search size={16} /> },
-    { name: "Embeddings", icon: <Cpu size={16} /> },
-    { name: "AI Agent", icon: <Sparkles size={16} /> },
     { name: "Library", icon: <Folder size={16} /> },
-    { name: "Sync", icon: <RefreshCcw size={16} /> },
-    { name: "Privacy", icon: <ShieldAlert size={16} /> },
+    { name: "Embeddings", icon: <Cpu size={16} /> },
   ];
 
   return (
@@ -200,11 +205,6 @@ export default function Settings() {
               />
             )}
 
-            {!["Library", "Embeddings"].includes(activeTab) && (
-              <div className="empty-tab-state">
-                <p>Settings for {activeTab} will appear here.</p>
-              </div>
-            )}
           </div>
 
           <div className="settings-footer">

@@ -277,17 +277,12 @@
 .settings-select--ollama option,
 .settings-select option {
   color: #e2e8f0;
-  background: #0b1222;
-}
-
-.settings-select--ollama option:hover,
-.settings-select option:hover {
-  background: rgba(96, 165, 250, 0.15);
+  background: #1a1f2e;
 }
 
 .settings-select--ollama option:checked,
 .settings-select option:checked {
-  background: rgba(59, 130, 246, 0.25);
+  background: rgba(96, 165, 250, 0.25);
   color: #ffffff;
 }
 
