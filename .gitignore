@@ -183,3 +183,23 @@ backend/chroma_data/
 backend/tests/
 backend/dev_data/
 *.db
+
+# --- Tauri / Rust ---
+# Tauri's build output and temporary files
+/frontend/src-tauri/target/
+/frontend/src-tauri/gen/
+/frontend/src-tauri/node_modules/
+/frontend/src-tauri/resources/mole-backend/
+
+# --- Node / Frontend ---
+# Dependencies
+/frontend/node_modules/
+# Vite/React output
+/frontend/dist/
+/frontend/.vite/
+/frontend/.output/
+
+# --- IDE / OS Specifics ---
+.DS_Store
+Thumbs.db
+.vscode/

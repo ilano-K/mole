@@ -1,6 +1,6 @@
 {
   "$schema": "./gen/schemas/desktop-schema.json",
-  "productName": "frontend",
+  "productName": "mole",
   "version": "0.1.0",
   "identifier": "com.karlsaulog.mole",
   "build": {
@@ -35,6 +35,7 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": ["resources/mole-backend/**/*"]
   }
 }
