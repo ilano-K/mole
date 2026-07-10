@@ -1,8 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+from app.core.paths import DATABASE_PATH
 
 # 1. Create the database file
-SQLALCHEMY_DATABASE_URL = "sqlite:///./mole.db"
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{str(DATABASE_PATH)}"
 
 # 2. Engine
 engine = create_engine(

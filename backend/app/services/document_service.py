@@ -11,9 +11,10 @@ from app.utils import parsers
 from pathlib import Path
 import os 
 from app.database.models import Document
-
 from app.database import crud
+import logging 
 
+logger = logging.getLogger(__name__)
 
 def reset_index(db: Session):
     config = get_config(db)
@@ -73,11 +74,15 @@ def check_needs_indexing(file_path: str, db: Session):
     return True
 
 def process_index_file(file_path: str, db: Session):
-    if check_needs_indexing(file_path, db):
-        return execute_indexing(file_path, db)
-    
-    return crud.get_document_by_path(db, file_path)
+    try:
+        if check_needs_indexing(file_path, db):
+            return execute_indexing(file_path, db)
 
+        return crud.get_document_by_path(db, file_path)
+
+    except Exception as e:
+        logger.exception("Failed to index file: %s", file_path)
+        raise exceptions.FileIndexingError()
 def process_index_batch(file_paths: list[str], db: Session):
     if len(file_paths) == 0:
         raise exceptions.EmptyFileListError()
@@ -136,7 +141,12 @@ def scan_pending_files(db: Session):
 
 def search_documents(query: str, db: Session, n_results: int = 5, unique_results: bool = False):
     config = get_config(db)
-    raw = chroma_service.search_documents(query, config, n_results)
+    
+    try:
+        raw = chroma_service.search_documents(query, config, n_results)
+    except Exception:
+        logging.exception("Document search failed. Query: %s", query)
+        raise exceptions.DocumentSearchError()        
     
     seen = set()
     results = []
@@ -146,7 +156,7 @@ def search_documents(query: str, db: Session, n_results: int = 5, unique_results
         raw["metadatas"],
         raw["distances"]
     ):
-        file_path = meta['file_path']
+        file_path = meta.get('file_path')
         
         if unique_results and file_path in seen:
             continue 

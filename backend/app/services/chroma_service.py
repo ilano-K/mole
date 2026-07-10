@@ -1,8 +1,9 @@
 import chromadb 
 from app.services.embedding_service import get_embedding_function
+from app.core.paths import CHROMA_PATH
 
 #1. initialize chroma client
-chroma_client = chromadb.PersistentClient(path='./chroma_data')
+chroma_client = chromadb.PersistentClient(path=str(CHROMA_PATH))
 
 #2. 
 def get_collection(config):

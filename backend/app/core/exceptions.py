@@ -24,3 +24,7 @@ class FileIndexingError(AppException):
 class FileDirectoryNotFoundError(AppException):
     status_code = 404
     detail = "File not found"
+    
+class DocumentSearchError(AppException):
+    status_code = 500
+    detail = "Document search failed"
