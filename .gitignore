@@ -188,7 +188,7 @@ backend/dev_data/
 # Tauri's build output and temporary files
 /frontend/src-tauri/target/
 /frontend/src-tauri/gen/
-/frontend/src-tauri/node_modules/
+/frontend/node_modules/
 /frontend/src-tauri/resources/mole-backend/
 
 # --- Node / Frontend ---

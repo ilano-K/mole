@@ -7,6 +7,7 @@ from app.api.status import router as status_router
 from app.api.ollama import router as ollama_router
 from app.core.exceptions import AppException
 from app.database.database import Base, engine
+import uvicorn
 import logging 
 
 logging.basicConfig(
@@ -39,3 +40,7 @@ def app_exception_handler(req: Request, exc: AppException):
         status_code=exc.status_code,
         content={"detail": exc.detail}
     )
+    
+if __name__ == "__main__":
+    logger.info("Starting Uvicorn server...")
+    uvicorn.run(app, host="127.0.0.1", port=8000)
