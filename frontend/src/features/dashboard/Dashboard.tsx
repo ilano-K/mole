@@ -101,7 +101,7 @@ export default function Dashboard() {
   // Start the sync flow. This may show a pre-sync modal and then open the
   // full sync progress modal if there is work to do.
   const handleSync = async () => {
-    refreshStatus();
+    await refreshStatus();
     setShowPreSyncModal(true);
 
     const hasPendingFiles = pendingFiles.length > 0 || needsReindex;
@@ -198,7 +198,9 @@ export default function Dashboard() {
             >
               ✕
             </button>
-            {pendingFiles.length === 0 ? (
+            {needsReindex ? (
+              <div className="pre-sync-spinner" />
+            ) : pendingFiles.length === 0 ? (
               <div className="pre-sync-check" aria-hidden="true">
                 <Check size={24} />
               </div>
@@ -206,15 +208,23 @@ export default function Dashboard() {
               <div className="pre-sync-spinner" />
             )}
             <h3>
-              {pendingFiles.length === 0 ? "Up to date" : "Scanning folder…"}
+              {needsReindex
+                ? "Preparing reindex…"
+                : pendingFiles.length === 0
+                  ? "Up to date"
+                  : "Scanning folder…"}
             </h3>
             <p>
-              {pendingFiles.length === 0
-                ? "No new files need syncing right now."
-                : `Preparing your sync for ${selectedDirectory || "your selected folder"}`}
+              {needsReindex
+                ? "Your settings changed. Rebuilding the index…"
+                : pendingFiles.length === 0
+                  ? "No new files need syncing right now."
+                  : `Preparing your sync for ${selectedDirectory || "your selected folder"}`}
             </p>
             <div className="pre-sync-summary">
-              {pendingFiles.length === 0 ? (
+              {needsReindex ? (
+                <span>Reindex required</span>
+              ) : pendingFiles.length === 0 ? (
                 <span>Everything is up to date</span>
               ) : (
                 <span>
@@ -223,7 +233,7 @@ export default function Dashboard() {
                 </span>
               )}
             </div>
-            {pendingFiles.length === 0 && (
+            {!needsReindex && pendingFiles.length === 0 && (
               <div className="pre-sync-actions">
                 <button
                   type="button"
