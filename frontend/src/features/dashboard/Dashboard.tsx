@@ -27,7 +27,7 @@ export default function Dashboard() {
   // Search state
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [, setIsSearching] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Indicates that index metadata has changed and a full rebuild is required.
   const [needsReindex, setNeedsReindex] = useState(false);
@@ -326,31 +326,38 @@ export default function Dashboard() {
               <span>Click + to pin files to agent context</span>
             </div>
             <div className="results-list">
-              {displayResults.map((result) => (
-                <SearchResultCard
-                  key={result.file_path}
-                  result={result}
-                  showPin
-                  onPin={() =>
-                    alert(`Pinned ${result.filename} to AI context!`)
-                  }
-                  onOpen={async () => {
-                    try {
-                      await openPath(result.file_path);
-                    } catch (err) {
-                      console.error("openPath failed:", err);
-                      try {
-                        await navigator.clipboard.writeText(result.file_path);
-                        alert(
-                          `Could not open file directly. Path copied to clipboard:\n${result.file_path}`,
-                        );
-                      } catch (copyErr) {
-                        alert(`Could not open file. Path: ${result.file_path}`);
-                      }
+              {isSearching ? (
+                <div className="search-loading">
+                  <div className="search-spinner" />
+                  <span>Searching...</span>
+                </div>
+              ) : (
+                displayResults.map((result) => (
+                  <SearchResultCard
+                    key={result.file_path}
+                    result={result}
+                    showPin
+                    onPin={() =>
+                      alert(`Pinned ${result.filename} to AI context!`)
                     }
-                  }}
-                />
-              ))}
+                    onOpen={async () => {
+                      try {
+                        await openPath(result.file_path);
+                      } catch (err) {
+                        console.error("openPath failed:", err);
+                        try {
+                          await navigator.clipboard.writeText(result.file_path);
+                          alert(
+                            `Could not open file directly. Path copied to clipboard:\n${result.file_path}`,
+                          );
+                        } catch (copyErr) {
+                          alert(`Could not open file. Path: ${result.file_path}`);
+                        }
+                      }
+                    }}
+                  />
+                ))
+              )}
             </div>
           </div>
           <div className="ai-chat-sidebar">
@@ -404,7 +411,12 @@ export default function Dashboard() {
             <span>Use ↑↓ to navigate · Enter to open</span>
           </div>
           <div className="results-list">
-            {displayResults.length > 0 ? (
+            {isSearching ? (
+              <div className="search-loading">
+                <div className="search-spinner" />
+                <span>Searching...</span>
+              </div>
+            ) : displayResults.length > 0 ? (
               displayResults.map((result) => (
                 <SearchResultCard key={result.file_path} result={result} />
               ))

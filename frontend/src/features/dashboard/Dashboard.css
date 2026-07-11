@@ -684,6 +684,25 @@ BANNERS & HELPER BUTTONS
   padding: 40px 0;
 }
 
+.search-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
+.search-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-top-color: #60a5fa;
+  animation: spin 0.8s linear infinite;
+}
+
 /* Pre-sync modal actions */
 .pre-sync-actions {
   margin-top: 16px;
