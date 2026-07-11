@@ -316,9 +316,13 @@ export default function Dashboard() {
         <div className="bottom-split-layout">
           <div className="search-results-area-populated">
             <div className="results-header">
-              <span>
-                {displayResults.length} results for "{query && "..."}"
-              </span>
+              {query ? (
+                <span>
+                  {displayResults.length} results for "{query}"
+                </span>
+              ) : (
+                <span>Try searching your documents</span>
+              )}
               <span>Click + to pin files to agent context</span>
             </div>
             <div className="results-list">
@@ -390,9 +394,13 @@ export default function Dashboard() {
         // Standard search layout: a simple list of result cards for quick lookup.
         <div className="search-results-container">
           <div className="results-header">
-            <span>
-              {displayResults.length} results for "{query || "..."}"
-            </span>
+            {query ? (
+              <span>
+                {displayResults.length} results for "{query}"
+              </span>
+            ) : (
+              <span>Try searching your documents</span>
+            )}
             <span>Use ↑↓ to navigate · Enter to open</span>
           </div>
           <div className="results-list">
@@ -402,7 +410,9 @@ export default function Dashboard() {
               ))
             ) : (
               <div className="empty-results">
-                No results yet. Enter a query to search your indexed documents.
+                {query
+                  ? "No results found. Try a different query."
+                  : "Enter a query to search your indexed documents."}
               </div>
             )}
           </div>
