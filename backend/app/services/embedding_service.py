@@ -46,10 +46,10 @@ def create_embedding(config: AppConfig):
     if config.embedding_provider == EmbeddingProvider.COHERE:
         return CohereEmbeddingFunction(model_name=embedding_model, api_key=api_key)
     
-    if config.embedding_model == EmbeddingProvider.JINA:
+    if config.embedding_provider == EmbeddingProvider.JINA:
         return JinaEmbeddingFunction(model_name=embedding_model, api_key=api_key)
     
-    if config.embedding_model == EmbeddingProvider.VOYAGE:
+    if config.embedding_provider == EmbeddingProvider.VOYAGE:
         return VoyageAIEmbeddingFunction(model_name=embedding_model, api_key=api_key)
 
     # === default === 

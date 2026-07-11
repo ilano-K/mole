@@ -23,6 +23,6 @@ JINA_MODELS = {
 
 VOYAGE_AI = {
     "voyage-3-large",
-    "voyage-3"
+    "voyage-3",
     "voyage-lite-02-instruct"
 }
