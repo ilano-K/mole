@@ -49,7 +49,12 @@ export default function Setup() {
       const ollamaModels = await fetchOllamaModels();
       const models = ollamaModels.models;
       setOllamaModels(models);
-      if (!models || models.length === 0) {
+      if (models && models.length > 0) {
+        setSetup((prev) => ({
+          ...prev,
+          ollamaModel: prev.ollamaModel || models[0].name,
+        }));
+      } else {
         showToast("No Ollama models found.", "info");
       }
       console.log(models);
@@ -216,7 +221,7 @@ export default function Setup() {
                 step === 1
                   ? !setup.targetDir
                   : setup.engineOption === EmbeddingProvider.OLLAMA
-                    ? ollamaLoading || ollamaModels.length === 0
+                    ? ollamaLoading || ollamaModels.length === 0 || !setup.ollamaModel
                     : isCloudEmbeddingProvider(setup.engineOption)
                       ? !setup.cloudModel || !setup.apiKey
                       : false
@@ -227,7 +232,9 @@ export default function Setup() {
                     ? "Connecting to Ollama..."
                     : ollamaModels.length === 0
                       ? "No Ollama models available — cannot save"
-                      : undefined
+                      : !setup.ollamaModel
+                        ? "Select a model to continue"
+                        : undefined
                   : undefined
               }
               onClick={handleContinue}

@@ -55,6 +55,12 @@ export default function Settings() {
       setOllamaError("");
       const response = await fetchOllamaModels();
       setOllamaModels(response.models);
+      if (response.models.length > 0) {
+        setConfig((prev) => ({
+          ...prev,
+          embedding_model: prev.embedding_model || response.models[0].name,
+        }));
+      }
     } catch (error) {
       console.error("Error loading Ollama models:", error);
       setOllamaError("Unable to load Ollama models.");
