@@ -19,16 +19,25 @@ logger = logging.getLogger(__name__)
 def reset_index(db: Session):
     config = get_config(db)
     # reset chromadb
-    chroma_service.recreate_collection(config)
     
+    try:
+        chroma_service.recreate_collection(config)
+    except Exception:
+        logger.exception("Failed to recreate chroma collection")
+        raise exceptions.FileIndexingError()
     # reset documents table
-    db.query(Document).delete()
-    db.commit()
-    
-    config = get_config(db)
-    config.needs_rebuild = False
-    db.commit()
-    db.refresh(config)
+    try:
+        db.query(Document).delete()
+        db.commit()
+        
+        config = get_config(db)
+        config.needs_rebuild = False
+        db.commit()
+        db.refresh(config)
+    except Exception:
+        db.rollback()
+        logging.exception("Failed to reset index database")
+        raise exceptions.DatabaseError()
 
     return ResetIndexResponse(
         success=True,

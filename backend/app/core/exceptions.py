@@ -28,3 +28,11 @@ class FileDirectoryNotFoundError(AppException):
 class DocumentSearchError(AppException):
     status_code = 500
     detail = "Document search failed"
+    
+class ResetIndexError(AppException):
+    status_code = 500
+    detail = "Reset index failed"
+
+class DatabaseError(AppException):
+    status_code = 500
+    detail = "Encountered a problem with database"
