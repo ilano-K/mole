@@ -86,7 +86,6 @@ def process_index_file(file_path: str, db: Session):
     try:
         if check_needs_indexing(file_path, db):
             return execute_indexing(file_path, db)
-
         return crud.get_document_by_path(db, file_path)
 
     except Exception as e:

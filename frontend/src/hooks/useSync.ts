@@ -26,11 +26,10 @@ export function useSync() {
 
       try {
         await indexFile({ file_path: filePath });
+        setIndexedFiles((prev) => prev + 1);
       } catch (error) {
-        console.error("Failed to index file ${fileName}: ", error);
-        // ill track failed files here
+        console.error(`Failed to index file ${fileName}: `, error);
       }
-      setIndexedFiles((prev) => prev + 1);
     }
     setIsComplete(true);
   };
