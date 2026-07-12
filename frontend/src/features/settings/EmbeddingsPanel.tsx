@@ -24,16 +24,28 @@ export default function EmbeddingsPanel({
   ollamaError,
   loadOllamaModels,
 }: Props) {
+  const DEFAULT_EMBEDDING_MODEL = "all-MiniLM-L6-v2";
+
   const onProviderChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const provider = e.target.value as EmbeddingProvider;
-    setConfig((prev) => ({
-      ...prev,
-      embedding_provider: provider,
-      embedding_model: "",
-    }));
+
+    if (provider === EmbeddingProvider.DEFAULT) {
+      setConfig((prev) => ({
+        ...prev,
+        embedding_provider: provider,
+        embedding_model: DEFAULT_EMBEDDING_MODEL,
+      }));
+      return;
+    }
 
     if (provider === EmbeddingProvider.OLLAMA) {
+      setConfig((prev) => ({
+        ...prev,
+        embedding_provider: provider,
+        embedding_model: "",
+      }));
       await loadOllamaModels();
+      return;
     }
 
     if (isCloudEmbeddingProvider(provider)) {
@@ -42,9 +54,17 @@ export default function EmbeddingsPanel({
       )?.[1];
       setConfig((prev) => ({
         ...prev,
+        embedding_provider: provider,
         embedding_model: entry?.models?.[0] ?? "",
       }));
+      return;
     }
+
+    setConfig((prev) => ({
+      ...prev,
+      embedding_provider: provider,
+      embedding_model: "",
+    }));
   };
 
   return (

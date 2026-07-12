@@ -31,7 +31,7 @@ export default function Settings() {
     include_subfolders: false,
     allowed_extensions: [".pdf", ".docx", ".txt"],
     embedding_provider: "default",
-    embedding_model: "",
+    embedding_model: "all-MiniLM-L6-v2",
     api_key: "",
     needs_reindex: false,
   });

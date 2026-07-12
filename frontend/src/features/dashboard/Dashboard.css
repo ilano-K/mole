@@ -414,6 +414,13 @@ RESULT CARDS (GLASS EDITION)
 
 .empty-results {
   width: 100%;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(59, 130, 246, 0.15);
+  border-radius: 12px;
+  background: rgba(30, 64, 175, 0.05);
 }
 
 /* =========================================
@@ -680,8 +687,7 @@ BANNERS & HELPER BUTTONS
 
 .empty-results {
   color: rgba(255, 255, 255, 0.4);
-  text-align: center;
-  padding: 40px 0;
+  font-size: 0.95rem;
 }
 
 .search-loading {

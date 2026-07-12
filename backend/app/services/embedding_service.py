@@ -53,5 +53,7 @@ def create_embedding(config: AppConfig):
         return VoyageAIEmbeddingFunction(model_name=embedding_model, api_key=api_key)
 
     # === default === 
+    if not embedding_model or not embedding_model.strip():
+        embedding_model = "all-MiniLM-L6-v2"
     return SentenceTransformerEmbeddingFunction(model_name=embedding_model)
     

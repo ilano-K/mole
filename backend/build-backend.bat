@@ -1,0 +1,1 @@
+pyinstaller --name mole-backend --icon=app-logo.ico --onedir --noconfirm --collect-all chromadb --collect-all docling --collect-all docling_parse --collect-all rapidocr --hidden-import chromadb.telemetry.product.posthog app/main.py
