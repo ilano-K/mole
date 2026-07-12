@@ -13,14 +13,14 @@ A simple desktop app that lets you search through your documents using plain lan
 
 ## Embedding Providers
 
-| Provider | Type | Models |
-|----------|------|--------|
-| **Built-in** (default) | Local, offline | `all-MiniLM-L6-v2` |
-| **Ollama** | Local server | `nomic-embed-text`, `bge-m3`, `snowflake-arctic-embed2`, and more |
-| **OpenAI** | Cloud | `text-embedding-3-small`, `text-embedding-3-large` |
-| **Cohere** | Cloud | `embed-v4.0`, `embed-english-v3.0`, `embed-multilingual-v3.0` |
-| **Voyage AI** | Cloud | `voyage-3-large`, `voyage-3`, `voyage-lite-02-instruct` |
-| **Jina AI** | Cloud | `jina-embeddings-v3` |
+| Provider               | Type           | Models                                                            |
+| ---------------------- | -------------- | ----------------------------------------------------------------- |
+| **Built-in** (default) | Local, offline | `all-MiniLM-L6-v2`                                                |
+| **Ollama**             | Local server   | `nomic-embed-text`, `bge-m3`, `snowflake-arctic-embed2`, and more |
+| **OpenAI**             | Cloud          | `text-embedding-3-small`, `text-embedding-3-large`                |
+| **Cohere**             | Cloud          | `embed-v4.0`, `embed-english-v3.0`, `embed-multilingual-v3.0`     |
+| **Voyage AI**          | Cloud          | `voyage-3-large`, `voyage-3`, `voyage-lite-02-instruct`           |
+| **Jina AI**            | Cloud          | `jina-embeddings-v3`                                              |
 
 ## Getting Started
 
@@ -83,7 +83,3 @@ npm run tauri build     # build for distribution
 - **Backend:** Python, FastAPI, ChromaDB, Docling
 - **Embeddings:** sentence-transformers, Ollama, and cloud provider APIs
 - **Database:** SQLite (app config and document metadata)
-
-## License
-
-MIT
